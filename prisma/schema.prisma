@@ -1,0 +1,25 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id         Int      @id @default(autoincrement())
+    createdAt  DateTime @default(now()) @map("created_at")
+    updatedAt  DateTime @updatedAt @map("updated_at")
+    email      String   @unique
+    password   String
+    firstname  String
+    lastname   String
+    // background  String   @default("#AC8282")
+    // birthday    String   @default("")
+    // description String   @default("")
+    // education   String   @default("")
+    // likes       Int      @default(0)
+    // phone       String   @default("")
+    avatarPath String   @default("/uploadss/default-avatar.png") @map("avatar_path")
+}
