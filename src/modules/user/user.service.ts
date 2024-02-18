@@ -3,7 +3,6 @@ import { CreateUserDto } from './dto';
 import { PrismaService } from '../../prisma.service';
 import { hash } from 'argon2';
 import { User } from '@prisma/client';
-import { TokenService } from '../token/token.service';
 import { UserResponse } from './response';
 
 @Injectable()

@@ -1,7 +1,7 @@
 import { Controller, Post, Body, UsePipes, UseGuards, ValidationPipe, Get, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserLoginDto, UserRegisterDto } from './dto';
-import { AuthResponse } from './response';
+import { CheckEmail, UserLoginDto, UserRegisterDto } from './dto';
+import { AuthResponse, CheckEmailResponse } from './response';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -33,5 +33,15 @@ export class AuthController {
 	async googleAuthRedirect(@Req() req, @Res() res): Promise<AuthResponse> {
 		const response = await this.authService.googleAuth(req.user);
 		return res.json(response);
+	}
+
+	@Get('sendMail')
+	async sendMail(@Body() dto: UserRegisterDto): Promise<string> {
+		return this.authService.sendTempPasswordMail(dto);
+	}
+
+	@Post('checkEmail')
+	async checkEmail(@Body() dto: CheckEmail): Promise<CheckEmailResponse> {
+		return this.authService.forgotPassword(dto.email);
 	}
 }

@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AppError } from '../../common/constants/error';
 import { PrismaService } from '../../prisma.service';
-import { Tokens, RefreshTokensResponse } from './response';
+import { RefreshTokensResponse, Tokens } from './response';
 
 @Injectable()
 export class TokenService {
@@ -46,6 +46,29 @@ export class TokenService {
 			return { user, tokens };
 		} catch (e) {
 			throw new Error(e);
+		}
+	}
+
+	generateTempToken(email: string): string {
+		const data = { email };
+		try {
+			return this.jwt.sign(data, {
+				secret: this.configService.get('jwt_key'),
+				expiresIn: '1h',
+			});
+		} catch (e) {
+			console.error(e);
+		}
+	}
+
+	async isTokenExpired(token: string): Promise<boolean> {
+		try {
+			await this.jwt.verifyAsync(token);
+			// Если не было ошибок, значит токен действителен
+			return false;
+		} catch (error) {
+			// Если произошла ошибка, проверяем, является ли это ошибкой истечения срока действия токена
+			return error.name === 'TokenExpiredError';
 		}
 	}
 }
