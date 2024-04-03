@@ -49,8 +49,8 @@ export class TokenService {
 		}
 	}
 
-	generateTempToken(email: string): string {
-		const data = { email };
+	generateTempToken(id: number): string {
+		const data = { id };
 		try {
 			return this.jwt.sign(data, {
 				secret: this.configService.get('jwt_key'),
@@ -64,11 +64,15 @@ export class TokenService {
 	async isTokenExpired(token: string): Promise<boolean> {
 		try {
 			await this.jwt.verifyAsync(token);
-			// Если не было ошибок, значит токен действителен
 			return false;
 		} catch (error) {
-			// Если произошла ошибка, проверяем, является ли это ошибкой истечения срока действия токена
 			return error.name === 'TokenExpiredError';
 		}
+	}
+
+	async decodeToken(token: string): Promise<any> {
+		return await this.jwt.verify(token, {
+			secret: this.configService.get('jwt_key'),
+		});
 	}
 }

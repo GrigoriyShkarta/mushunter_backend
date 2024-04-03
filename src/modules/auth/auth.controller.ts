@@ -1,7 +1,7 @@
 import { Controller, Post, Body, UsePipes, UseGuards, ValidationPipe, Get, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CheckEmail, UserLoginDto, UserRegisterDto } from './dto';
-import { AuthResponse, CheckEmailResponse } from './response';
+import { ChangePassword, CheckEmail, CheckTempPassword, UserLoginDto, UserRegisterDto } from './dto';
+import { AuthResponse } from './response';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -35,13 +35,25 @@ export class AuthController {
 		return res.json(response);
 	}
 
-	@Get('sendMail')
+	@Post('sendMail')
 	async sendMail(@Body() dto: UserRegisterDto): Promise<string> {
 		return this.authService.sendTempPasswordMail(dto);
 	}
-
-	@Post('checkEmail')
-	async checkEmail(@Body() dto: CheckEmail): Promise<CheckEmailResponse> {
+	@UsePipes(new ValidationPipe())
+	@Post('forgotPassword')
+	async forgotPassword(@Body() dto: CheckEmail): Promise<string> {
 		return this.authService.forgotPassword(dto.email);
+	}
+
+	@UsePipes(new ValidationPipe())
+	@Post('checkTempPassword')
+	async checkTempPassword(@Body() dto: CheckTempPassword): Promise<boolean> {
+		return this.authService.checkTempPassword(dto);
+	}
+
+	@UsePipes(new ValidationPipe())
+	@Post('changePassword')
+	async changePassword(@Body() dto: ChangePassword): Promise<boolean> {
+		return this.authService.changePassword(dto);
 	}
 }

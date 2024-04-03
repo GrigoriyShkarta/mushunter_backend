@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto';
 import { PrismaService } from '../../prisma.service';
 import { hash } from 'argon2';
 import { User } from '@prisma/client';
 import { UserResponse } from './response';
+import { AppError } from '../../common/constants/error';
+import { getLogger } from 'nodemailer/lib/shared';
 
 @Injectable()
 export class UserService {
@@ -14,6 +16,21 @@ export class UserService {
 			return this.prisma.user.findUnique({
 				where: { email },
 			});
+		} catch (e) {
+			throw new Error(e);
+		}
+	}
+
+	async changePassword(id: number, newPassword: string): Promise<boolean> {
+		try {
+			const res = await this.prisma.user.update({
+				where: { id },
+				data: {
+					password: await hash(newPassword),
+				},
+			});
+
+			return !!res;
 		} catch (e) {
 			throw new Error(e);
 		}
@@ -32,7 +49,7 @@ export class UserService {
 					id: true,
 					firstname: true,
 					lastname: true,
-					email: true,
+					email: false,
 				},
 			});
 		} catch (e) {

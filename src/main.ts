@@ -12,7 +12,12 @@ async function bootstrap(): Promise<void> {
 	await prismaService.enableShutdownHooks(app);
 
 	// app.setGlobalPrefix('api');
-	app.enableCors();
+	app.enableCors({
+		origin: 'http://localhost:5173', // Разрешить запросы с этого источника
+		methods: ['GET', 'POST', 'PUT', 'DELETE'], // Разрешенные HTTP методы
+		allowedHeaders: ['Content-Type', 'Authorization'], // Разрешенные заголовки
+		credentials: true, // Разрешить отправку куки и заголовков авторизации
+	});
 
 	const config = new DocumentBuilder()
 		.setTitle('MusHunter api')

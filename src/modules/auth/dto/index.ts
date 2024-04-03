@@ -46,3 +46,27 @@ export class CheckEmail {
 	@IsEmail()
 	email: string;
 }
+
+export class CheckTempPassword {
+	@ApiProperty()
+	@IsString()
+	tempPassword: string;
+
+	@ApiProperty()
+	@IsEmail()
+	email: string;
+
+	@ApiProperty()
+	@IsString()
+	tempToken: string;
+}
+
+export class ChangePassword {
+	@ApiProperty()
+	@IsString()
+	newPassword: string;
+
+	@ApiProperty()
+	@IsString()
+	tempToken: string;
+}

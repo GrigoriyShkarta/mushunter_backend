@@ -10,9 +10,3 @@ export class AuthResponse {
 	@ApiProperty()
 	tokens: Tokens;
 }
-
-export class CheckEmailResponse {
-	@ApiProperty()
-	@IsBoolean()
-	sendMail: boolean;
-}
