@@ -21,21 +21,6 @@ export class UserService {
 		}
 	}
 
-	async changePassword(id: number, newPassword: string): Promise<boolean> {
-		try {
-			const res = await this.prisma.user.update({
-				where: { id },
-				data: {
-					password: await hash(newPassword),
-				},
-			});
-
-			return !!res;
-		} catch (e) {
-			throw new Error(e);
-		}
-	}
-
 	async createUser(dto: CreateUserDto): Promise<UserResponse> {
 		try {
 			return this.prisma.user.create({
@@ -43,7 +28,6 @@ export class UserService {
 					firstname: dto.firstname,
 					lastname: dto.lastname,
 					email: dto.email,
-					password: await hash(dto.password),
 				},
 				select: {
 					id: true,

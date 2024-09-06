@@ -13,21 +13,6 @@ export class UserRegisterDto {
 	@ApiProperty()
 	@IsEmail()
 	email: string;
-
-	@ApiProperty()
-	@MinLength(6, { message: 'Password must be at least 6 characters long' })
-	@IsString()
-	password: string;
-
-	@ApiProperty()
-	@IsOptional()
-	@IsString()
-	tempToken: string;
-
-	@ApiProperty()
-	@IsOptional()
-	@IsString()
-	tempPassword: string;
 }
 
 export class UserLoginDto {
@@ -41,7 +26,7 @@ export class UserLoginDto {
 	password: string;
 }
 
-export class CheckEmail {
+export class Email {
 	@ApiProperty()
 	@IsEmail()
 	email: string;

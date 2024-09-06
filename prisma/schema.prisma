@@ -1,36 +1,44 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    id           Int      @id @default(autoincrement())
-    createdAt    DateTime @default(now()) @map("created_at")
-    updatedAt    DateTime @updatedAt @map("updated_at")
-    email        String   @unique
-    password     String
-    firstname    String
-    lastname     String
-    tempPassword String   @default("")
-    // background  String   @default("#AC8282")
-    // birthday    String   @default("")
-    // description String   @default("")
-    // education   String   @default("")
-    // likes       Int      @default(0)
-    // phone       String   @default("")
-    avatarPath   String   @default("/uploadss/default-avatar.png") @map("avatar_path")
+  id           Int         @id @default(autoincrement())
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+  email        String      @unique
+  firstname    String
+  lastname     String
+  tempPassword String      @default("")
+  birthday     DateTime?
+  description  String?
+  education    String?
+  likes        Int         @default(0)
+  phone        String?
+  city         String?
+  avatarPath   String      @map("avatar_path")
+  skills       UserSkill[]
 }
 
-model TempAuthData {
-    id           Int      @id @default(autoincrement())
-    createdAt    DateTime @default(now()) @map("created_at")
-    email        String   @unique
-    password     String
-    tempPassword String   @map("temp_password")
-    firstname    String
-    lastname     String
+model Skill {
+  id    Int         @id @default(autoincrement())
+  name  String
+  type  String
+  users UserSkill[]
+}
+
+model UserSkill {
+  id      Int   @id @default(autoincrement())
+  userId  Int
+  skillId Int
+  level   Int
+  user    User  @relation(fields: [userId], references: [id])
+  skill   Skill @relation(fields: [skillId], references: [id])
+
+  @@unique([userId, skillId])
 }
