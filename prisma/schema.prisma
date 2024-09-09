@@ -8,37 +8,41 @@ datasource db {
 }
 
 model User {
-  id           Int         @id @default(autoincrement())
-  createdAt    DateTime    @default(now()) @map("created_at")
-  updatedAt    DateTime    @updatedAt @map("updated_at")
-  email        String      @unique
-  firstname    String
-  lastname     String
-  tempPassword String      @default("")
-  birthday     DateTime?
-  description  String?
-  education    String?
-  likes        Int         @default(0)
-  phone        String?
-  city         String?
-  avatarPath   String      @map("avatar_path")
-  skills       UserSkill[]
+  id          Int         @id @default(autoincrement())
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  email       String      @unique
+  firstname   String
+  lastname    String
+  birthday    DateTime?
+  description String?
+  education   String?
+  likes       Int         @default(0)
+  phone       String?
+  cityId      Int?
+  city        City?       @relation(fields: [cityId], references: [id])
+  skills      UserSkill[]
+}
+
+model UserSkill {
+  id         Int   @id @default(autoincrement())
+  userId     Int
+  skillId    Int
+  experience Int
+  user       User  @relation(fields: [userId], references: [id])
+  skill      Skill @relation(fields: [skillId], references: [id])
+
+  @@unique([userId, skillId])
 }
 
 model Skill {
   id    Int         @id @default(autoincrement())
   name  String
-  type  String
   users UserSkill[]
 }
 
-model UserSkill {
-  id      Int   @id @default(autoincrement())
-  userId  Int
-  skillId Int
-  level   Int
-  user    User  @relation(fields: [userId], references: [id])
-  skill   Skill @relation(fields: [skillId], references: [id])
-
-  @@unique([userId, skillId])
+model City {
+  id    Int    @id @default(autoincrement())
+  name  String
+  users User[]
 }

@@ -5,10 +5,10 @@ import { UserModule } from '../user/user.module';
 import { TokenModule } from '../token/token.module';
 import { UserService } from '../user/user.service';
 import { PrismaService } from '../../prisma.service';
-import { GoogleStrategy } from './google.strategy';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import * as process from 'process';
+import { I18nModule } from 'nestjs-i18n';
 
 @Module({
 	imports: [
@@ -25,6 +25,6 @@ import * as process from 'process';
 		TokenModule,
 	],
 	controllers: [AuthController],
-	providers: [AuthService, UserService, PrismaService, GoogleStrategy],
+	providers: [AuthService, UserService, PrismaService],
 })
 export class AuthModule {}

@@ -4,10 +4,11 @@ import { TokenController } from './token.controller';
 import { JwtService } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { PrismaService } from '../../prisma.service';
+import { UserService } from '../user/user.service';
 
 @Module({
 	controllers: [TokenController],
-	providers: [TokenService, JwtService, JwtStrategy, PrismaService],
+	providers: [TokenService, JwtService, JwtStrategy, PrismaService, UserService],
 	exports: [TokenService],
 })
 export class TokenModule {}

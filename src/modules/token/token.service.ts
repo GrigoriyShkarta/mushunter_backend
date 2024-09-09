@@ -2,15 +2,15 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AppError } from '../../common/constants/error';
-import { PrismaService } from '../../prisma.service';
 import { RefreshTokensResponse, Tokens } from './response';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class TokenService {
 	constructor(
 		private jwt: JwtService,
 		private readonly configService: ConfigService,
-		private readonly prisma: PrismaService,
+		private readonly user: UserService,
 	) {}
 	issueTokens(userId: number): Tokens {
 		const data = { id: userId };
@@ -33,15 +33,7 @@ export class TokenService {
 				secret: this.configService.get('jwt_key'),
 			});
 			if (!result) throw new UnauthorizedException(AppError.INVALID_REFRESH_TOKEN);
-			const user = await this.prisma.user.findUnique({
-				where: { id: result.id },
-				select: {
-					id: true,
-					firstname: true,
-					lastname: true,
-					email: true,
-				},
-			});
+			const user = await this.user.getUser(result.id);
 			const tokens = this.issueTokens(user.id);
 			return { user, tokens };
 		} catch (e) {

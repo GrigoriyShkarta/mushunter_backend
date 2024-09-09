@@ -1,0 +1,10 @@
+{
+    "city": {
+        "Kharkiv": "Kharkiv",
+        "Lviv": "Lviv",
+        "Kyiv": "Kyiv",
+        "Odessa": "Odessa",
+        "Poltava": "Poltava",
+        "Dnipro": "Dnipro"
+    }
+}

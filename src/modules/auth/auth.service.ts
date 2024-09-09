@@ -5,7 +5,7 @@ import {
 	NotFoundException,
 	UnauthorizedException,
 } from '@nestjs/common';
-import { Email, UserRegisterDto } from './dto';
+import { Email, EmailWidthLang, UserRegisterDto, UserRegisterDtoWidthLang } from './dto';
 import { UserService } from '../user/user.service';
 import { TokenService } from '../token/token.service';
 import { AppError } from '../../common/constants/error';
@@ -25,9 +25,9 @@ export class AuthService {
 		private readonly prisma: PrismaService,
 		private readonly configService: ConfigService,
 	) {}
-	async register(dto: UserRegisterDto): Promise<AuthResponse> {
+	async register(dto: UserRegisterDtoWidthLang): Promise<AuthResponse> {
 		try {
-			const validate = await this.validateRegisterUser(dto.email);
+			const validate = await this.validateRegisterUser({ email: dto.email, lang: dto.lang });
 			if (validate) {
 				const user = await this.userService.createUser(dto);
 				const tokens = this.tokenService.issueTokens(user.id);
@@ -39,7 +39,7 @@ export class AuthService {
 		}
 	}
 
-	async login(dto: Email): Promise<AuthResponse> {
+	async login(dto: EmailWidthLang): Promise<AuthResponse> {
 		try {
 			const user = await this.validateLoginUser(dto);
 			const tokens = this.tokenService.issueTokens(user.id);
@@ -50,14 +50,14 @@ export class AuthService {
 		}
 	}
 
-	private async validateLoginUser(dto: Email): Promise<UserResponse> {
-		const user = await this.userService.findUserByEmail(dto.email);
+	private async validateLoginUser(dto: EmailWidthLang): Promise<UserResponse> {
+		const user = await this.userService.findUserByEmail(dto);
 		if (!user) throw new NotFoundException(AppError.USER_LOGIN_ERROR);
 		return user;
 	}
 
-	private async validateRegisterUser(email: string): Promise<boolean> {
-		const user = await this.userService.findUserByEmail(email);
+	private async validateRegisterUser(dto: EmailWidthLang): Promise<boolean> {
+		const user = await this.userService.findUserByEmail(dto);
 		if (user) {
 			throw new ConflictException('User with this email already exists');
 		} else {
@@ -65,9 +65,9 @@ export class AuthService {
 		}
 	}
 
-	async socialMediaAuth(dto: Email): Promise<boolean | AuthResponse> {
+	async socialMediaAuth(dto: EmailWidthLang): Promise<boolean | AuthResponse> {
 		try {
-			const user = await this.userService.findUserByEmail(dto.email);
+			const user = await this.userService.findUserByEmail(dto);
 			if (user) {
 				const tokens = this.tokenService.issueTokens(user.id);
 				return { user, tokens };
@@ -79,9 +79,9 @@ export class AuthService {
 		}
 	}
 
-	async checkEmail(dto: Email): Promise<boolean> {
+	async checkEmail(dto: EmailWidthLang): Promise<boolean> {
 		try {
-			const user = await this.userService.findUserByEmail(dto.email);
+			const user = await this.userService.findUserByEmail(dto);
 			return !!user;
 		} catch (e) {
 			console.error(e);

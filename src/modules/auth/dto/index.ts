@@ -15,6 +15,24 @@ export class UserRegisterDto {
 	email: string;
 }
 
+export class UserRegisterDtoWidthLang {
+	@ApiProperty()
+	@IsString()
+	firstname: string;
+
+	@ApiProperty()
+	@IsString()
+	lastname: string;
+
+	@ApiProperty()
+	@IsEmail()
+	email: string;
+
+	@ApiProperty()
+	@IsString()
+	lang: string;
+}
+
 export class UserLoginDto {
 	@ApiProperty()
 	@IsEmail()
@@ -30,6 +48,16 @@ export class Email {
 	@ApiProperty()
 	@IsEmail()
 	email: string;
+}
+
+export class EmailWidthLang {
+	@ApiProperty()
+	@IsEmail()
+	email: string;
+
+	@ApiProperty()
+	@IsString()
+	lang: string;
 }
 
 export class CheckTempPassword {
