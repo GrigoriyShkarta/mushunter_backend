@@ -1,5 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
+
+class TranslatedObj {
+	@ApiProperty()
+	@IsString()
+	ua: string;
+
+	@ApiProperty()
+	@IsString()
+	en: string;
+}
 
 export class UserResponse {
 	@ApiProperty()
@@ -16,7 +26,7 @@ export class UserResponse {
 
 	@ApiProperty()
 	@IsOptional()
-	@IsString()
+	@IsDate()
 	birthday: string;
 
 	@ApiProperty()
@@ -41,12 +51,15 @@ export class UserResponse {
 
 	@ApiProperty()
 	@IsOptional()
-	@IsString()
-	city: string;
+	city: TranslatedObj;
 
 	@ApiProperty()
 	@IsOptional()
 	skills: Skills[];
+
+	@ApiProperty()
+	@IsOptional()
+	styles: Styles[];
 }
 
 export class City {
@@ -65,10 +78,19 @@ export class Skills {
 	id: number;
 
 	@ApiProperty()
-	@IsString()
-	name: string;
+	name: TranslatedObj;
 
 	@ApiProperty()
 	@IsNumber()
 	experience: number;
+}
+
+export class Styles {
+	@ApiProperty()
+	@IsNumber()
+	id: number;
+
+	@ApiProperty()
+	@IsString()
+	name: string;
 }

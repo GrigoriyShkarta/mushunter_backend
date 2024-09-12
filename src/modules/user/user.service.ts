@@ -32,8 +32,23 @@ export class UserService {
 							},
 						},
 					},
+					styles: {
+						include: {
+							style: {
+								select: {
+									id: true,
+									name: true,
+								},
+							},
+						},
+					},
 				},
 			});
+
+			if (!user) {
+				return null;
+			}
+
 			return this.formatUser(user, dto.lang);
 		} catch (e) {
 			throw new Error(e);
@@ -52,7 +67,12 @@ export class UserService {
 					city: true,
 					skills: {
 						include: {
-							skill: true,
+							skill: {
+								select: {
+									id: true,
+									name: true,
+								},
+							},
 						},
 					},
 				},
@@ -98,25 +118,42 @@ export class UserService {
 	}
 
 	private formatUser(user, lang): UserResponse {
-		const translatedCityName = user.city ? this.i18n.t(`translation.city.${user.city.name}`, { lang }) : null;
+		const translatedCityName = user?.city
+			? {
+					en: this.i18n.t(`translation.city.${user?.city.name}`, { lang: 'en' }),
+					ua: this.i18n.t(`translation.city.${user?.city.name}`, { lang: 'ua' }),
+				}
+			: undefined;
 
-		return {
+		return <UserResponse>{
 			id: user.id,
 			firstname: user.firstname,
 			lastname: user.lastname,
-			birthday: user.birthday,
-			description: user.description,
-			education: user.education,
-			phone: user.phone,
+			birthday: user?.birthday ?? undefined,
+			description: user?.description ?? undefined,
+			education: user?.education ?? undefined,
+			phone: user?.phone ?? undefined,
 			likes: user.likes,
 			city: translatedCityName,
-			skills: user.skills
-				? user.skills.map((userSkill) => ({
-						id: userSkill.skill.id,
-						name: userSkill.skill.name,
-						experience: userSkill.experience,
-					}))
+			skills: user?.skills
+				? user.skills
+						.map((userSkill) => {
+							if (userSkill.skill && userSkill.skill.name) {
+								return {
+									id: userSkill.skill.id,
+									name: {
+										en: this.i18n.t(`translation.skill.${userSkill.skill.name}`, { lang: 'en' }),
+										ua: this.i18n.t(`translation.skill.${userSkill.skill.name}`, { lang: 'ua' }),
+									},
+									experience: userSkill.experience,
+								};
+							}
+							return null;
+						})
+						.filter((skill) => skill !== null)
 				: [],
+			links: user?.links ?? [],
+			styles: user?.styles.style ?? [],
 		};
 	}
 }

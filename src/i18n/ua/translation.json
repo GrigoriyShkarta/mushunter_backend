@@ -6,5 +6,15 @@
         "Odessa": "Одесса",
         "Poltava": "Полтава",
         "Dnipro": "Дніпро"
+    },
+    "skill": {
+        "guitar": "гітара",
+        "electric-guitar": "електрогітара",
+        "vocal": "вокал",
+        "drums": "барабани",
+        "keys": "клавіши",
+        "manager": "менеджер",
+        "acoustic-guitar": "акустична гітара",
+        "bass-guitar": "бас гітара"
     }
 }

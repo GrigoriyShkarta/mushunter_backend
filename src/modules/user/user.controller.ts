@@ -1,9 +1,10 @@
-import { Controller, Get, Headers, Req, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Headers, Req, UseGuards, UseInterceptors, UsePipes } from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { UserResponse } from './response';
 import { AuthGuard } from '@nestjs/passport';
 import { CompressionInterceptor } from '../../common/interceptors/compressionInterceptor';
+import { DecompressPipe } from '../../common/pipes/decompressPipe';
 
 @Controller('user')
 export class UserController {
@@ -12,6 +13,7 @@ export class UserController {
 	@ApiTags('USER')
 	@UseGuards(AuthGuard('jwt'))
 	@UseInterceptors(CompressionInterceptor)
+	@UsePipes(DecompressPipe)
 	@ApiResponse({ status: 200, type: UserResponse })
 	@Get('me')
 	async getProfile(@Req() req, @Headers('accept-language') lang: string): Promise<UserResponse> {

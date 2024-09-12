@@ -3,8 +3,8 @@ import { AuthService } from './auth.service';
 import { Email, EmailWidthLang, UserLoginDto, UserRegisterDto } from './dto';
 import { AuthResponse } from './response';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { DecompressPipe } from '../../common/interceptors/decompressionInterceptor';
 import { CompressionInterceptor } from '../../common/interceptors/compressionInterceptor';
+import { DecompressPipe } from '../../common/pipes/decompressPipe';
 
 @Controller('auth')
 export class AuthController {

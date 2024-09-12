@@ -22,6 +22,8 @@ model User {
   cityId      Int?
   city        City?       @relation(fields: [cityId], references: [id])
   skills      UserSkill[]
+  links       String[]    @default([])
+  styles      UserStyle[]
 }
 
 model UserSkill {
@@ -35,6 +37,16 @@ model UserSkill {
   @@unique([userId, skillId])
 }
 
+model UserStyle {
+  id      Int   @id @default(autoincrement())
+  userId  Int
+  styleId Int
+  user    User  @relation(fields: [userId], references: [id])
+  style   Style @relation(fields: [styleId], references: [id])
+
+  @@unique([userId, styleId])
+}
+
 model Skill {
   id    Int         @id @default(autoincrement())
   name  String
@@ -45,4 +57,10 @@ model City {
   id    Int    @id @default(autoincrement())
   name  String
   users User[]
+}
+
+model Style {
+  id    Int         @id @default(autoincrement())
+  name  String      @unique
+  users UserStyle[]
 }
