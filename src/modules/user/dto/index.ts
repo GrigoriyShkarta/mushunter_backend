@@ -13,18 +13,10 @@ export class CreateUserDto {
 	@ApiProperty()
 	@IsEmail()
 	email: string;
-
-	@ApiProperty()
-	@IsString()
-	lang: string;
 }
 
 export class FindUserDto {
 	@ApiProperty()
 	@IsEmail()
 	email: string;
-
-	@ApiProperty()
-	@IsString()
-	lang: string;
 }

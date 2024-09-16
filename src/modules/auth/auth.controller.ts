@@ -1,6 +1,6 @@
 import { Controller, Post, Body, UsePipes, Headers, ValidationPipe, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Email, EmailWidthLang, UserLoginDto, UserRegisterDto } from './dto';
+import { Email, UserRegisterDto } from './dto';
 import { AuthResponse } from './response';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CompressionInterceptor } from '../../common/interceptors/compressionInterceptor';
@@ -15,8 +15,8 @@ export class AuthController {
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 201, type: AuthResponse })
 	@Post('register')
-	register(@Body() dto: UserRegisterDto, @Headers('accept-language') lang: string): Promise<AuthResponse> {
-		return this.authService.register({ email: dto.email, firstname: dto.firstname, lastname: dto.lastname, lang });
+	register(@Body() dto: UserRegisterDto): Promise<AuthResponse> {
+		return this.authService.register({ email: dto.email, firstname: dto.firstname, lastname: dto.lastname });
 	}
 
 	@ApiTags('AUTH')
@@ -25,8 +25,8 @@ export class AuthController {
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 200, type: AuthResponse })
 	@Post('login')
-	async login(@Body() dto: Email, @Headers('accept-language') lang: string): Promise<AuthResponse> {
-		return this.authService.login({ email: dto.email, lang });
+	async login(@Body() dto: Email): Promise<AuthResponse> {
+		return this.authService.login({ email: dto.email });
 	}
 
 	@ApiTags('AUTH')
@@ -35,8 +35,8 @@ export class AuthController {
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 200, type: AuthResponse })
 	@Post('socialAuth')
-	async socialAuth(@Body() dto: Email, @Headers('accept-language') lang: string): Promise<boolean | AuthResponse> {
-		return this.authService.socialMediaAuth({ email: dto.email, lang });
+	async socialAuth(@Body() dto: Email): Promise<boolean | AuthResponse> {
+		return this.authService.socialMediaAuth({ email: dto.email });
 	}
 
 	@ApiTags('AUTH')
@@ -45,7 +45,7 @@ export class AuthController {
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 200 })
 	@Post('checkEmail')
-	async checkEmail(@Body() dto: Email, @Headers('accept-language') lang: string): Promise<boolean> {
-		return this.authService.checkEmail({ email: dto.email, lang });
+	async checkEmail(@Body() dto: Email): Promise<boolean> {
+		return this.authService.checkEmail({ email: dto.email });
 	}
 }

@@ -49,7 +49,7 @@ export class UserService {
 				return null;
 			}
 
-			return this.formatUser(user, dto.lang);
+			return this.formatUser(user);
 		} catch (e) {
 			throw new Error(e);
 		}
@@ -78,7 +78,7 @@ export class UserService {
 				},
 			});
 
-			return this.formatUser(user, dto.lang);
+			return this.formatUser(user);
 		} catch (e) {
 			throw new Error(`Failed to create user: ${e.message}`);
 		}
@@ -111,13 +111,14 @@ export class UserService {
 				throw new Error(`User with id ${id} not found`);
 			}
 
-			return this.formatUser(user, lang);
+			return this.formatUser(user);
 		} catch (e) {
 			throw new Error(`Error fetching user with id ${id}: ${e.message}`);
 		}
 	}
 
-	private formatUser(user, lang): UserResponse {
+	private formatUser(user): UserResponse {
+		console.log('user', user);
 		const translatedCityName = user?.city
 			? {
 					en: this.i18n.t(`translation.city.${user?.city.name}`, { lang: 'en' }),
@@ -153,7 +154,12 @@ export class UserService {
 						.filter((skill) => skill !== null)
 				: [],
 			links: user?.links ?? [],
-			styles: user?.styles.style ?? [],
+			styles: user?.styles?.map((userStyle) => {
+				return {
+					id: userStyle.style.id,
+					name: userStyle.style.name,
+				};
+			}),
 		};
 	}
 }
