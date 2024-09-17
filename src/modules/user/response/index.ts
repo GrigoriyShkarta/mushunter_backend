@@ -60,6 +60,21 @@ export class UserResponse {
 	@ApiProperty()
 	@IsOptional()
 	styles: Styles[];
+
+	@ApiProperty()
+	@IsOptional()
+	links: string[];
+}
+
+export class SettingsResponse {
+	@ApiProperty()
+	cities: City[];
+
+	@ApiProperty()
+	skills: Skills[];
+
+	@ApiProperty()
+	styles: Styles[];
 }
 
 export class City {

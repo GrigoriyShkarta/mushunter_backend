@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto, FindUserDto } from './dto';
 import { PrismaService } from '../../prisma.service';
-import { UserResponse } from './response';
+import { SettingsResponse, UserResponse } from './response';
 import { I18nService } from 'nestjs-i18n';
+import { translateField, formatSkills, formatStyles, includeUserRelations } from './utils/user.utils';
 
 @Injectable()
 export class UserService {
@@ -12,154 +13,84 @@ export class UserService {
 	) {}
 
 	async findUserByEmail(dto: FindUserDto): Promise<UserResponse> {
-		try {
-			const user = await this.prisma.user.findUnique({
-				where: { email: dto.email },
-				include: {
-					city: {
-						select: {
-							id: true,
-							name: true,
-						},
-					},
-					skills: {
-						include: {
-							skill: {
-								select: {
-									id: true,
-									name: true,
-								},
-							},
-						},
-					},
-					styles: {
-						include: {
-							style: {
-								select: {
-									id: true,
-									name: true,
-								},
-							},
-						},
-					},
-				},
-			});
+		const user = await this.prisma.user.findUnique({
+			where: { email: dto.email },
+			include: includeUserRelations,
+		});
 
-			if (!user) {
-				return null;
-			}
-
-			return this.formatUser(user);
-		} catch (e) {
-			throw new Error(e);
-		}
+		return user ? this.formatUser(user) : null;
 	}
 
 	async createUser(dto: CreateUserDto): Promise<UserResponse> {
-		try {
-			const user = await this.prisma.user.create({
-				data: {
-					firstname: dto.firstname,
-					lastname: dto.lastname,
-					email: dto.email,
-				},
-				include: {
-					city: true,
-					skills: {
-						include: {
-							skill: {
-								select: {
-									id: true,
-									name: true,
-								},
-							},
-						},
-					},
-				},
-			});
+		const user = await this.prisma.user.create({
+			data: {
+				firstname: dto.firstname,
+				lastname: dto.lastname,
+				email: dto.email,
+			},
+			include: includeUserRelations,
+		});
 
-			return this.formatUser(user);
-		} catch (e) {
-			throw new Error(`Failed to create user: ${e.message}`);
-		}
+		return this.formatUser(user);
 	}
 
-	async getUser(id: number, lang?: string): Promise<UserResponse> {
-		try {
-			const user = await this.prisma.user.findUnique({
-				where: { id },
-				include: {
-					city: {
-						select: {
-							name: true,
-						},
-					},
-					skills: {
-						include: {
-							skill: {
-								select: {
-									id: true,
-									name: true,
-								},
-							},
-						},
-					},
-				},
-			});
+	async getUser(id: number): Promise<UserResponse> {
+		const user = await this.prisma.user.findUnique({
+			where: { id },
+			include: includeUserRelations,
+		});
 
-			if (!user) {
-				throw new Error(`User with id ${id} not found`);
-			}
-
-			return this.formatUser(user);
-		} catch (e) {
-			throw new Error(`Error fetching user with id ${id}: ${e.message}`);
+		if (!user) {
+			throw new Error(`User with id ${id} not found`);
 		}
+
+		return this.formatUser(user);
+	}
+
+	async getSettings(): Promise<SettingsResponse> {
+		const cities = await this.prisma.city.findMany({
+			select: {
+				id: true,
+				name: true,
+			},
+		});
+		const styles = await this.prisma.style.findMany({
+			select: {
+				id: true,
+				name: true,
+			},
+		});
+		const skills = await this.prisma.skill.findMany({
+			select: {
+				id: true,
+				name: true,
+			},
+		});
+
+		return { cities, styles, skills };
 	}
 
 	private formatUser(user): UserResponse {
-		console.log('user', user);
 		const translatedCityName = user?.city
 			? {
-					en: this.i18n.t(`translation.city.${user?.city.name}`, { lang: 'en' }),
-					ua: this.i18n.t(`translation.city.${user?.city.name}`, { lang: 'ua' }),
+					en: translateField(this.i18n, `city.${user.city.name}`, 'en'),
+					ua: translateField(this.i18n, `city.${user.city.name}`, 'ua'),
 				}
 			: undefined;
 
-		return <UserResponse>{
+		return {
 			id: user.id,
 			firstname: user.firstname,
 			lastname: user.lastname,
-			birthday: user?.birthday ?? undefined,
-			description: user?.description ?? undefined,
-			education: user?.education ?? undefined,
-			phone: user?.phone ?? undefined,
+			birthday: user.birthday ?? undefined,
+			description: user.description ?? undefined,
+			education: user.education ?? undefined,
+			phone: user.phone ?? undefined,
 			likes: user.likes,
 			city: translatedCityName,
-			skills: user?.skills
-				? user.skills
-						.map((userSkill) => {
-							if (userSkill.skill && userSkill.skill.name) {
-								return {
-									id: userSkill.skill.id,
-									name: {
-										en: this.i18n.t(`translation.skill.${userSkill.skill.name}`, { lang: 'en' }),
-										ua: this.i18n.t(`translation.skill.${userSkill.skill.name}`, { lang: 'ua' }),
-									},
-									experience: userSkill.experience,
-								};
-							}
-							return null;
-						})
-						.filter((skill) => skill !== null)
-				: [],
+			skills: formatSkills(this.i18n, user?.skills ?? []),
 			links: user?.links ?? [],
-			styles: user?.styles?.map((userStyle) => {
-				return {
-					id: userStyle.style.id,
-					name: userStyle.style.name,
-				};
-			}),
+			styles: formatStyles(user?.styles ?? []),
 		};
 	}
 }
