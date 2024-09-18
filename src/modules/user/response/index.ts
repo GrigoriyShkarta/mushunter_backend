@@ -11,6 +11,15 @@ class TranslatedObj {
 	en: string;
 }
 
+export class City {
+	@ApiProperty()
+	@IsNumber()
+	id: number;
+
+	@ApiProperty()
+	name: TranslatedObj;
+}
+
 export class UserResponse {
 	@ApiProperty()
 	@IsNumber()
@@ -51,7 +60,7 @@ export class UserResponse {
 
 	@ApiProperty()
 	@IsOptional()
-	city: TranslatedObj;
+	city: City;
 
 	@ApiProperty()
 	@IsOptional()
@@ -71,20 +80,19 @@ export class SettingsResponse {
 	cities: City[];
 
 	@ApiProperty()
-	skills: Skills[];
+	skills: GetSkills[];
 
 	@ApiProperty()
 	styles: Styles[];
 }
 
-export class City {
+export class GetSkills {
 	@ApiProperty()
 	@IsNumber()
 	id: number;
 
 	@ApiProperty()
-	@IsString()
-	name: string;
+	name: TranslatedObj;
 }
 
 export class Skills {

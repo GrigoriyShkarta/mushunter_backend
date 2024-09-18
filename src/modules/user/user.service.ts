@@ -67,14 +67,31 @@ export class UserService {
 			},
 		});
 
-		return { cities, styles, skills };
+		const translateItems = (items: any[], type: string) => {
+			return items.map((item) => ({
+				id: item.id,
+				name: {
+					en: translateField(this.i18n, `${type}.${item.name}`, 'en'),
+					ua: translateField(this.i18n, `${type}.${item.name}`, 'ua'),
+				},
+			}));
+		};
+
+		return {
+			styles,
+			cities: translateItems(cities, 'city'),
+			skills: translateItems(skills, 'skill'),
+		};
 	}
 
 	private formatUser(user): UserResponse {
 		const translatedCityName = user?.city
 			? {
-					en: translateField(this.i18n, `city.${user.city.name}`, 'en'),
-					ua: translateField(this.i18n, `city.${user.city.name}`, 'ua'),
+					id: user.city.id,
+					name: {
+						en: translateField(this.i18n, `city.${user.city.name}`, 'en'),
+						ua: translateField(this.i18n, `city.${user.city.name}`, 'ua'),
+					},
 				}
 			: undefined;
 
