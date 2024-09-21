@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto, FindUserDto } from './dto';
+import { ChangeMainDataDto, CreateUserDto, FindUserDto } from './dto';
 import { PrismaService } from '../../prisma.service';
 import { SettingsResponse, UserResponse } from './response';
 import { I18nService } from 'nestjs-i18n';
@@ -83,6 +83,18 @@ export class UserService {
 			skills: translateItems(skills, 'skill'),
 		};
 	}
+
+	// async changeMainData(id: number, dto: ChangeMainDataDto): Promise<UserResponse> {
+	// 	const user = await this.prisma.user.update({
+	// 		where: { id },
+	// 		data: {
+	// 			styles: {
+	// 				deleteMany: {},
+	// 				create: dto.styles.map((styleId) => ({ styleId })),
+	// 			},
+	// 		},
+	// 	});
+	// }
 
 	private formatUser(user): UserResponse {
 		const translatedCityName = user?.city

@@ -36,7 +36,7 @@ export class UserResponse {
 	@ApiProperty()
 	@IsOptional()
 	@IsDate()
-	birthday: string;
+	birthday: Date;
 
 	@ApiProperty()
 	@IsOptional()
