@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { ChangeMainDataDto, CreateUserDto, FindUserDto } from './dto';
+import { ChangeMainDataDto, ChangeSkillsDataDto, CreateUserDto, FindUserDto } from './dto';
 import { PrismaService } from '../../prisma.service';
 import { SettingsResponse, UserResponse } from './response';
 import { I18nService } from 'nestjs-i18n';
-import { translateField, formatSkills, formatStyles, includeUserRelations } from './utils/user.utils';
+import {
+	translateField,
+	formatSkills,
+	formatStyles,
+	includeUserRelations,
+} from './utils/user.utils';
 
 @Injectable()
 export class UserService {
@@ -23,11 +28,7 @@ export class UserService {
 
 	async createUser(dto: CreateUserDto): Promise<UserResponse> {
 		const user = await this.prisma.user.create({
-			data: {
-				firstname: dto.firstname,
-				lastname: dto.lastname,
-				email: dto.email,
-			},
+			data: { ...dto },
 			include: includeUserRelations,
 		});
 
@@ -48,34 +49,20 @@ export class UserService {
 	}
 
 	async getSettings(): Promise<SettingsResponse> {
-		const cities = await this.prisma.city.findMany({
-			select: {
-				id: true,
-				name: true,
-			},
-		});
-		const styles = await this.prisma.style.findMany({
-			select: {
-				id: true,
-				name: true,
-			},
-		});
-		const skills = await this.prisma.skill.findMany({
-			select: {
-				id: true,
-				name: true,
-			},
-		});
+		const [cities, styles, skills] = await Promise.all([
+			this.prisma.city.findMany({ select: { id: true, name: true } }),
+			this.prisma.style.findMany({ select: { id: true, name: true } }),
+			this.prisma.skill.findMany({ select: { id: true, name: true } }),
+		]);
 
-		const translateItems = (items: any[], type: string) => {
-			return items.map((item) => ({
+		const translateItems = (items: any[], type: string) =>
+			items.map((item) => ({
 				id: item.id,
 				name: {
 					en: translateField(this.i18n, `${type}.${item.name}`, 'en'),
 					ua: translateField(this.i18n, `${type}.${item.name}`, 'ua'),
 				},
 			}));
-		};
 
 		return {
 			styles,
@@ -84,17 +71,74 @@ export class UserService {
 		};
 	}
 
-	// async changeMainData(id: number, dto: ChangeMainDataDto): Promise<UserResponse> {
-	// 	const user = await this.prisma.user.update({
-	// 		where: { id },
-	// 		data: {
-	// 			styles: {
-	// 				deleteMany: {},
-	// 				create: dto.styles.map((styleId) => ({ styleId })),
-	// 			},
-	// 		},
-	// 	});
-	// }
+	async changeMainData(id: number, dto: ChangeMainDataDto): Promise<UserResponse> {
+		const dataToUpdate = {
+			firstname: dto.firstname,
+			lastname: dto.lastname,
+			birthday: dto.birthday,
+			education: dto.education,
+			cityId: dto.city,
+			phone: dto?.phone,
+			links: dto.links,
+		};
+
+		await this.prisma.user.update({
+			where: { id },
+			data: dataToUpdate,
+		});
+
+		if (dto.styles) {
+			await this.updateUserStyles(id, dto.styles);
+		}
+
+		const updatedUser = await this.prisma.user.findUnique({
+			where: { id },
+			include: includeUserRelations,
+		});
+
+		return this.formatUser(updatedUser);
+	}
+
+	async changeSkills(id: number, dto: ChangeSkillsDataDto): Promise<UserResponse> {
+		await this.prisma.userSkill.deleteMany({
+			where: { userId: id },
+		});
+
+		await Promise.all(
+			dto.skills.map((skill) => {
+				return this.prisma.userSkill.upsert({
+					where: {
+						userId_skillId: {
+							userId: id,
+							skillId: skill.skill,
+						},
+					},
+					update: {
+						experience: skill.experience,
+					},
+					create: {
+						userId: id,
+						skillId: skill.skill,
+						experience: skill.experience,
+					},
+				});
+			}),
+		);
+
+		const updatedUser = await this.prisma.user.findUnique({
+			where: { id },
+			include: includeUserRelations,
+		});
+
+		return this.formatUser(updatedUser);
+	}
+
+	private async updateUserStyles(userId: number, styles: number[]): Promise<void> {
+		await this.prisma.userStyle.deleteMany({ where: { userId } });
+
+		const userStyles = styles.map((styleId) => ({ userId, styleId }));
+		await this.prisma.userStyle.createMany({ data: userStyles });
+	}
 
 	private formatUser(user): UserResponse {
 		const translatedCityName = user?.city
