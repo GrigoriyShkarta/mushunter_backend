@@ -83,3 +83,10 @@ export class ChangeSkillsDataDto {
 	@Type(() => SkillDto)
 	skills: SkillDto[];
 }
+
+export class ChangeDescriptionDto {
+	@ApiProperty()
+	@IsOptional()
+	@IsString()
+	description: string;
+}

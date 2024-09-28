@@ -1,5 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { ChangeMainDataDto, ChangeSkillsDataDto, CreateUserDto, FindUserDto } from './dto';
+import {
+	ChangeDescriptionDto,
+	ChangeMainDataDto,
+	ChangeSkillsDataDto,
+	CreateUserDto,
+	FindUserDto,
+} from './dto';
 import { PrismaService } from '../../prisma.service';
 import { SettingsResponse, UserResponse } from './response';
 import { I18nService } from 'nestjs-i18n';
@@ -131,6 +137,19 @@ export class UserService {
 		});
 
 		return this.formatUser(updatedUser);
+	}
+
+	async changeDescription(id: number, dto: ChangeDescriptionDto): Promise<UserResponse> {
+		const user = await this.prisma.user.update({
+			where: { id },
+			data: {
+				description: dto.description,
+			},
+			include: {
+				skills: true, // Включаем связанные данные о навыках (или другие необходимые поля)
+			},
+		});
+		return this.formatUser(user);
 	}
 
 	private async updateUserStyles(userId: number, styles: number[]): Promise<void> {

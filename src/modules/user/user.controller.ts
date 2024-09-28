@@ -5,7 +5,7 @@ import { SettingsResponse, UserResponse } from './response';
 import { AuthGuard } from '@nestjs/passport';
 import { CompressionInterceptor } from '../../common/interceptors/compressionInterceptor';
 import { DecompressPipe } from '../../common/pipes/decompressPipe';
-import { ChangeMainDataDto, ChangeSkillsDataDto } from './dto';
+import { ChangeDescriptionDto, ChangeMainDataDto, ChangeSkillsDataDto } from './dto';
 
 @Controller('user')
 export class UserController {
@@ -51,5 +51,16 @@ export class UserController {
 	@Post('changeSkills')
 	async changeSkills(@Req() req, @Body() dto: ChangeSkillsDataDto): Promise<UserResponse> {
 		return this.userService.changeSkills(req.user.id, dto);
+	}
+
+	@ApiTags('USER')
+	@UseGuards(AuthGuard('jwt'))
+	@UsePipes(new ValidationPipe())
+	@UsePipes(DecompressPipe)
+	@UseInterceptors(CompressionInterceptor)
+	@ApiResponse({ status: 200, type: UserResponse })
+	@Post('changeDescription')
+	async changeDescription(@Req() req, @Body() dto: ChangeDescriptionDto): Promise<UserResponse> {
+		return this.userService.changeDescription(req.user.id, dto);
 	}
 }
