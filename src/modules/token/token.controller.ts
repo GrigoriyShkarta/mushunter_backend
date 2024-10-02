@@ -1,8 +1,9 @@
-import { Body, Controller, HttpCode, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
 import { TokenService } from './token.service';
 import { RefreshTokenDto } from './dto';
 import { RefreshTokensResponse } from './response';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { CompressionInterceptor } from '../../common/interceptors/compressionInterceptor';
 
 @Controller('token')
 export class TokenController {

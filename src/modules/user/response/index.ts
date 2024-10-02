@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
 
 class TranslatedObj {
 	@ApiProperty()
@@ -73,6 +73,10 @@ export class UserResponse {
 	@ApiProperty()
 	@IsOptional()
 	links: string[];
+
+	@ApiProperty()
+	@IsBoolean()
+	hasLiked: boolean;
 }
 
 export class SettingsResponse {

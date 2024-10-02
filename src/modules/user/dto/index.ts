@@ -1,4 +1,14 @@
-import { IsArray, IsDate, IsEmail, IsNumber, IsString, IsOptional, IsNotEmpty, ValidateNested } from 'class-validator';
+import {
+	IsArray,
+	IsDate,
+	IsEmail,
+	IsNumber,
+	IsString,
+	IsOptional,
+	IsNotEmpty,
+	ValidateNested,
+	IsBoolean,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { Skill } from '@prisma/client';
@@ -21,6 +31,12 @@ export class FindUserDto {
 	@ApiProperty()
 	@IsEmail()
 	email: string;
+}
+
+export class GetUserDto {
+	@ApiProperty()
+	@IsNumber()
+	id: number;
 }
 
 export class ChangeMainDataDto {
@@ -89,4 +105,10 @@ export class ChangeDescriptionDto {
 	@IsOptional()
 	@IsString()
 	description: string;
+}
+
+export class ToggleLikeDto {
+	@ApiProperty()
+	@IsNumber()
+	id: number;
 }

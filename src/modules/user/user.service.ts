@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import {
 	ChangeDescriptionDto,
 	ChangeMainDataDto,
@@ -41,17 +41,22 @@ export class UserService {
 		return this.formatUser(user);
 	}
 
-	async getUser(id: number): Promise<UserResponse> {
+	async getUser(id: number, currentUserId?: number): Promise<UserResponse> {
 		const user = await this.prisma.user.findUnique({
 			where: { id },
 			include: includeUserRelations,
 		});
 
 		if (!user) {
-			throw new Error(`User with id ${id} not found`);
+			throw new NotFoundException(`User with id ${id} not found`);
 		}
 
-		return this.formatUser(user);
+		const hasLiked = await this.hasLikedUser(currentUserId, user.id);
+
+		return {
+			...this.formatUser(user),
+			hasLiked,
+		};
 	}
 
 	async getSettings(): Promise<SettingsResponse> {
@@ -146,10 +151,78 @@ export class UserService {
 				description: dto.description,
 			},
 			include: {
-				skills: true, // Включаем связанные данные о навыках (или другие необходимые поля)
+				skills: true,
 			},
 		});
 		return this.formatUser(user);
+	}
+
+	async likeUser(likerId: number, likedId: number): Promise<UserResponse> {
+		const existingLike = await this.prisma.likes.findUnique({
+			where: {
+				likerId_likedId: {
+					likerId,
+					likedId,
+				},
+			},
+		});
+
+		if (existingLike) {
+			await this.prisma.likes.delete({
+				where: {
+					id: existingLike.id,
+				},
+			});
+			await this.prisma.user.update({
+				where: { id: likedId },
+				data: { likes: { decrement: 1 } },
+			});
+		} else {
+			await this.prisma.likes.create({
+				data: {
+					likerId,
+					likedId,
+				},
+			});
+
+			await this.prisma.user.update({
+				where: { id: likedId },
+				data: { likes: { increment: 1 } },
+			});
+		}
+
+		const updatedUser = await this.prisma.user.findUnique({
+			where: { id: likedId },
+			include: includeUserRelations,
+		});
+
+		const hasLiked = !!(await this.prisma.likes.findUnique({
+			where: {
+				likerId_likedId: {
+					likerId,
+					likedId,
+				},
+			},
+		}));
+
+		return this.formatUser({ ...updatedUser, hasLiked });
+	}
+
+	async hasLikedUser(likerId: number, likedId: number): Promise<boolean> {
+		if (!likerId) {
+			return false;
+		}
+
+		const like = await this.prisma.likes.findUnique({
+			where: {
+				likerId_likedId: {
+					likerId,
+					likedId,
+				},
+			},
+		});
+
+		return !!like;
 	}
 
 	private async updateUserStyles(userId: number, styles: number[]): Promise<void> {
@@ -179,6 +252,7 @@ export class UserService {
 			education: user.education ?? undefined,
 			phone: user.phone ?? undefined,
 			likes: user.likes,
+			hasLiked: user.hasLiked ?? false,
 			city: translatedCityName,
 			skills: formatSkills(this.i18n, user?.skills ?? []),
 			links: user?.links ?? [],

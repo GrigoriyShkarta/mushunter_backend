@@ -1,11 +1,23 @@
-import { Body, Controller, Get, Post, Req, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+	Body,
+	Controller,
+	Get,
+	Post,
+	Query,
+	Req,
+	UseGuards,
+	UseInterceptors,
+	UsePipes,
+	ValidationPipe,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SettingsResponse, UserResponse } from './response';
 import { AuthGuard } from '@nestjs/passport';
 import { CompressionInterceptor } from '../../common/interceptors/compressionInterceptor';
 import { DecompressPipe } from '../../common/pipes/decompressPipe';
-import { ChangeDescriptionDto, ChangeMainDataDto, ChangeSkillsDataDto } from './dto';
+import { ChangeDescriptionDto, ChangeMainDataDto, ChangeSkillsDataDto, GetUserDto, ToggleLikeDto } from './dto';
+import { OptionalJwtAuthGuard } from '../token/optionalGuard';
 
 @Controller('user')
 export class UserController {
@@ -19,6 +31,16 @@ export class UserController {
 	@Get('me')
 	async getProfile(@Req() req): Promise<UserResponse> {
 		return this.userService.getUser(req.user.id);
+	}
+
+	@ApiTags('USER')
+	@UseGuards(OptionalJwtAuthGuard)
+	@UseInterceptors(CompressionInterceptor)
+	@ApiResponse({ status: 200, type: UserResponse })
+	@Get('getUser')
+	async getUser(@Req() req, @Query('id') id: string): Promise<UserResponse> {
+		const userId = req.user ? req.user.id : null;
+		return this.userService.getUser(+id, userId);
 	}
 
 	@ApiTags('USER')
@@ -62,5 +84,16 @@ export class UserController {
 	@Post('changeDescription')
 	async changeDescription(@Req() req, @Body() dto: ChangeDescriptionDto): Promise<UserResponse> {
 		return this.userService.changeDescription(req.user.id, dto);
+	}
+
+	@ApiTags('USER')
+	@UseGuards(AuthGuard('jwt'))
+	@UsePipes(new ValidationPipe())
+	@UsePipes(DecompressPipe)
+	@UseInterceptors(CompressionInterceptor)
+	@ApiResponse({ status: 200, type: UserResponse })
+	@Post('like')
+	async toggleLikeUser(@Req() req, @Body() dto: ToggleLikeDto): Promise<UserResponse> {
+		return this.userService.likeUser(req.user.id, dto.id);
 	}
 }
