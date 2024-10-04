@@ -21,7 +21,7 @@ import { CompressionInterceptor } from './common/interceptors/compressionInterce
 			fallbackLanguage: 'ua',
 			loader: I18nJsonLoader,
 			loaderOptions: {
-				path: path.join(__dirname, '/i18n/'),
+				path: path.join(process.cwd(), 'src', 'i18n'),
 				watch: true,
 			},
 			resolvers: [{ use: QueryResolver, options: ['lang'] }, AcceptLanguageResolver, new HeaderResolver(['x-lang'])],

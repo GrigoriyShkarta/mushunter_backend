@@ -16,7 +16,7 @@ export class AuthController {
 	@ApiResponse({ status: 201, type: AuthResponse })
 	@Post('register')
 	register(@Body() dto: UserRegisterDto): Promise<AuthResponse> {
-		return this.authService.register({ email: dto.email, firstname: dto.firstname, lastname: dto.lastname });
+		return this.authService.register({ email: dto.email, firstname: dto.firstname, lastname: dto.lastname, avatar: dto.avatar });
 	}
 
 	@ApiTags('AUTH')

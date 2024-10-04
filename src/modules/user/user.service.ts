@@ -4,33 +4,28 @@ import {
 	ChangeMainDataDto,
 	ChangeSkillsDataDto,
 	CreateUserDto,
-	FindUserDto,
 } from './dto';
 import { PrismaService } from '../../prisma.service';
 import { SettingsResponse, UserResponse } from './response';
 import { I18nService } from 'nestjs-i18n';
 import {
-	translateField,
+	formatLookingForSkills,
 	formatSkills,
 	formatStyles,
 	includeUserRelations,
+	translateField,
 } from './utils/user.utils';
+import { AppError } from '../../common/constants/error';
+import { FirebaseRepository } from '../../firebase.service';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 @Injectable()
 export class UserService {
 	constructor(
 		private readonly prisma: PrismaService,
 		private readonly i18n: I18nService,
+		private readonly firebaseRepository: FirebaseRepository,
 	) {}
-
-	async findUserByEmail(dto: FindUserDto): Promise<UserResponse> {
-		const user = await this.prisma.user.findUnique({
-			where: { email: dto.email },
-			include: includeUserRelations,
-		});
-
-		return user ? this.formatUser(user) : null;
-	}
 
 	async createUser(dto: CreateUserDto): Promise<UserResponse> {
 		const user = await this.prisma.user.create({
@@ -41,21 +36,26 @@ export class UserService {
 		return this.formatUser(user);
 	}
 
-	async getUser(id: number, currentUserId?: number): Promise<UserResponse> {
+	async getUser(id?: number, currentUserId?: number, email?: string): Promise<UserResponse> {
 		const user = await this.prisma.user.findUnique({
-			where: { id },
+			where: email ? { email } : { id },
 			include: includeUserRelations,
 		});
 
 		if (!user) {
-			throw new NotFoundException(`User with id ${id} not found`);
+			throw new NotFoundException(AppError.USER_LOGIN_ERROR);
 		}
 
 		const hasLiked = await this.hasLikedUser(currentUserId, user.id);
+		const lookingForSkills = formatLookingForSkills(
+			this.i18n,
+			await this.searchLookingSkills(user.lookingForSkills),
+		);
 
 		return {
 			...this.formatUser(user),
 			hasLiked,
+			lookingForSkills,
 		};
 	}
 
@@ -91,6 +91,9 @@ export class UserService {
 			cityId: dto.city,
 			phone: dto?.phone,
 			links: dto.links,
+			isLookingForBand: dto.isLookingForBand,
+			isOpenToOffers: dto.isOpenToOffers,
+			lookingForSkills: dto.lookingForSkills,
 		};
 
 		await this.prisma.user.update({
@@ -102,12 +105,7 @@ export class UserService {
 			await this.updateUserStyles(id, dto.styles);
 		}
 
-		const updatedUser = await this.prisma.user.findUnique({
-			where: { id },
-			include: includeUserRelations,
-		});
-
-		return this.formatUser(updatedUser);
+		return this.getUser(id);
 	}
 
 	async changeSkills(id: number, dto: ChangeSkillsDataDto): Promise<UserResponse> {
@@ -136,12 +134,7 @@ export class UserService {
 			}),
 		);
 
-		const updatedUser = await this.prisma.user.findUnique({
-			where: { id },
-			include: includeUserRelations,
-		});
-
-		return this.formatUser(updatedUser);
+		return this.getUser(id);
 	}
 
 	async changeDescription(id: number, dto: ChangeDescriptionDto): Promise<UserResponse> {
@@ -196,14 +189,7 @@ export class UserService {
 			include: includeUserRelations,
 		});
 
-		const hasLiked = !!(await this.prisma.likes.findUnique({
-			where: {
-				likerId_likedId: {
-					likerId,
-					likedId,
-				},
-			},
-		}));
+		const hasLiked = await this.hasLikedUser(likerId, likedId);
 
 		return this.formatUser({ ...updatedUser, hasLiked });
 	}
@@ -223,6 +209,28 @@ export class UserService {
 		});
 
 		return !!like;
+	}
+
+	async changeAvatar(file: Express.Multer.File): Promise<string> {
+		const storageRef = ref(storage, `images/${file.originalname}`);
+
+		// Загружаем файл в Firebase Storage
+		await uploadBytes(storageRef, file.buffer);
+
+		// Получаем ссылку на файл
+		const url = await getDownloadURL(storageRef);
+
+		return url;
+	}
+
+	private searchLookingSkills(skillIds: number[]) {
+		return this.prisma.skill.findMany({
+			where: {
+				id: {
+					in: skillIds,
+				},
+			},
+		});
 	}
 
 	private async updateUserStyles(userId: number, styles: number[]): Promise<void> {
@@ -257,6 +265,10 @@ export class UserService {
 			skills: formatSkills(this.i18n, user?.skills ?? []),
 			links: user?.links ?? [],
 			styles: formatStyles(user?.styles ?? []),
+			isLookingForBand: user.isLookingForBand ?? false,
+			isOpenToOffers: user.isOpenToOffers ?? false,
+			lookingForSkills: user.lookingForSkills ?? [],
+			avatar: user?.avatar ?? '',
 		};
 	}
 }

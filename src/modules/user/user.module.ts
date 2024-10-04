@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { PrismaService } from '../../prisma.service';
 import { JwtStrategy } from '../token/jwt.strategy';
+
 import { I18nModule } from 'nestjs-i18n';
 
 @Module({

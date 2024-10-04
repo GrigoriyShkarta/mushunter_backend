@@ -78,6 +78,21 @@ export class ChangeMainDataDto {
 	@IsOptional()
 	@IsArray()
 	links: string[];
+
+	@ApiProperty()
+	@IsOptional()
+	@IsBoolean()
+	isLookingForBand: boolean;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsBoolean()
+	isOpenToOffers: boolean;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsArray()
+	lookingForSkills: number[];
 }
 
 class SkillDto {

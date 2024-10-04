@@ -1,15 +1,8 @@
-import {
-	BadRequestException,
-	ConflictException,
-	Injectable,
-	NotFoundException,
-	UnauthorizedException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Email, UserRegisterDto } from './dto';
 import { UserService } from '../user/user.service';
 import { TokenService } from '../token/token.service';
 import { AppError } from '../../common/constants/error';
-import { verify } from 'argon2';
 import { AuthResponse } from './response';
 import { UserResponse } from '../user/response';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -51,13 +44,11 @@ export class AuthService {
 	}
 
 	private async validateLoginUser(dto: Email): Promise<UserResponse> {
-		const user = await this.userService.findUserByEmail(dto);
-		if (!user) throw new NotFoundException(AppError.USER_LOGIN_ERROR);
-		return user;
+		return await this.userService.getUser(undefined, undefined, dto.email);
 	}
 
 	private async validateRegisterUser(dto: Email): Promise<boolean> {
-		const user = await this.userService.findUserByEmail(dto);
+		const user = await this.userService.getUser(undefined, undefined, dto.email);
 		if (user) {
 			throw new ConflictException('User with this email already exists');
 		} else {
@@ -67,8 +58,7 @@ export class AuthService {
 
 	async socialMediaAuth(dto: Email): Promise<boolean | AuthResponse> {
 		try {
-			const user = await this.userService.findUserByEmail(dto);
-			console.log('user', user);
+			const user = await this.userService.getUser(undefined, undefined, dto.email);
 			if (user) {
 				const tokens = this.tokenService.issueTokens(user.id);
 				return { user, tokens };
@@ -82,7 +72,7 @@ export class AuthService {
 
 	async checkEmail(dto: Email): Promise<boolean> {
 		try {
-			const user = await this.userService.findUserByEmail(dto);
+			const user = await this.userService.getUser(undefined, undefined, dto.email);
 			return !!user;
 		} catch (e) {
 			console.error(e);

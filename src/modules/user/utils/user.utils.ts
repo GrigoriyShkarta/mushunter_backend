@@ -44,6 +44,16 @@ export const formatSkills = (i18n: I18nService, skills: any[]): any[] => {
 	}));
 };
 
+export const formatLookingForSkills = (i18n: I18nService, skills: any[]): any[] => {
+	return skills.map((skill) => ({
+		id: skill.id,
+		name: {
+			en: translateField(i18n, `skill.${skill.name}`, 'en'),
+			ua: translateField(i18n, `skill.${skill.name}`, 'ua'),
+		},
+	}));
+};
+
 export const formatStyles = (styles: any[]): any[] => {
 	return styles.map(({ style }) => ({
 		id: style.id,
