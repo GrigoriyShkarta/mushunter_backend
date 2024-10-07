@@ -1,10 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {
-	ChangeDescriptionDto,
-	ChangeMainDataDto,
-	ChangeSkillsDataDto,
-	CreateUserDto,
-} from './dto';
+import { ChangeDescriptionDto, ChangeMainDataDto, ChangeSkillsDataDto, CreateUserDto } from './dto';
 import { PrismaService } from '../../prisma.service';
 import { SettingsResponse, UserResponse } from './response';
 import { I18nService } from 'nestjs-i18n';
@@ -17,7 +12,7 @@ import {
 } from './utils/user.utils';
 import { AppError } from '../../common/constants/error';
 import { FirebaseRepository } from '../../firebase.service';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import * as admin from 'firebase-admin';
 
 @Injectable()
 export class UserService {
@@ -138,7 +133,7 @@ export class UserService {
 	}
 
 	async changeDescription(id: number, dto: ChangeDescriptionDto): Promise<UserResponse> {
-		const user = await this.prisma.user.update({
+		await this.prisma.user.update({
 			where: { id },
 			data: {
 				description: dto.description,
@@ -147,7 +142,7 @@ export class UserService {
 				skills: true,
 			},
 		});
-		return this.formatUser(user);
+		return this.getUser(id);
 	}
 
 	async likeUser(likerId: number, likedId: number): Promise<UserResponse> {
@@ -184,17 +179,12 @@ export class UserService {
 			});
 		}
 
-		const updatedUser = await this.prisma.user.findUnique({
-			where: { id: likedId },
-			include: includeUserRelations,
-		});
-
-		const hasLiked = await this.hasLikedUser(likerId, likedId);
-
-		return this.formatUser({ ...updatedUser, hasLiked });
+		return this.getUser(likedId, likerId);
 	}
 
 	async hasLikedUser(likerId: number, likedId: number): Promise<boolean> {
+		console.log('likerId', likerId, likedId);
+
 		if (!likerId) {
 			return false;
 		}
@@ -211,16 +201,45 @@ export class UserService {
 		return !!like;
 	}
 
-	async changeAvatar(file: Express.Multer.File): Promise<string> {
-		const storageRef = ref(storage, `images/${file.originalname}`);
+	async changeAvatar(userId: number, file: Express.Multer.File): Promise<UserResponse> {
+		const bucket = admin.storage().bucket();
 
-		// Загружаем файл в Firebase Storage
-		await uploadBytes(storageRef, file.buffer);
+		const user = await this.prisma.user.findUnique({
+			where: { id: userId },
+			select: { avatar: true },
+		});
 
-		// Получаем ссылку на файл
-		const url = await getDownloadURL(storageRef);
+		if (user?.avatar) {
+			const oldFileNameWithParams = user.avatar.split('/').pop();
+			const oldFileName = oldFileNameWithParams?.split('?')[0];
+			const oldFileRef = bucket.file(`images/${oldFileName}`);
+			try {
+				await oldFileRef.delete();
+			} catch (error) {
+				console.error('Не удалось удалить старый аватар:', error);
+			}
+		}
 
-		return url;
+		const fileName = `images/${file.originalname}`;
+		const fileRef = bucket.file(fileName);
+
+		await fileRef.save(file.buffer, {
+			metadata: {
+				contentType: file.mimetype,
+			},
+		});
+
+		const url = await fileRef.getSignedUrl({
+			action: 'read',
+			expires: '03-01-2500',
+		});
+
+		await this.prisma.user.update({
+			where: { id: userId },
+			data: { avatar: url[0] },
+		});
+
+		return this.getUser(userId);
 	}
 
 	private searchLookingSkills(skillIds: number[]) {

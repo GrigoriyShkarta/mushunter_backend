@@ -127,3 +127,8 @@ export class ToggleLikeDto {
 	@IsNumber()
 	id: number;
 }
+
+export class ChangeAvatar {
+	@ApiProperty({ type: 'string', format: 'binary' })
+	file: Express.Multer.File;
+}

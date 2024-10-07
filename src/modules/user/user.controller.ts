@@ -4,7 +4,7 @@ import {
 	Get,
 	Post,
 	Query,
-	Req,
+	Req, UploadedFile,
 	UseGuards,
 	UseInterceptors,
 	UsePipes,
@@ -16,8 +16,16 @@ import { SettingsResponse, UserResponse } from './response';
 import { AuthGuard } from '@nestjs/passport';
 import { CompressionInterceptor } from '../../common/interceptors/compressionInterceptor';
 import { DecompressPipe } from '../../common/pipes/decompressPipe';
-import { ChangeDescriptionDto, ChangeMainDataDto, ChangeSkillsDataDto, GetUserDto, ToggleLikeDto } from './dto';
+import {
+	ChangeAvatar,
+	ChangeDescriptionDto,
+	ChangeMainDataDto,
+	ChangeSkillsDataDto,
+	GetUserDto,
+	ToggleLikeDto,
+} from './dto';
 import { OptionalJwtAuthGuard } from '../token/optionalGuard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 export class UserController {
@@ -95,5 +103,17 @@ export class UserController {
 	@Post('like')
 	async toggleLikeUser(@Req() req, @Body() dto: ToggleLikeDto): Promise<UserResponse> {
 		return this.userService.likeUser(req.user.id, dto.id);
+	}
+
+	@ApiTags('USER')
+	@UseGuards(AuthGuard('jwt'))
+	@UsePipes(new ValidationPipe())
+	// @UsePipes(DecompressPipe)
+	@UseInterceptors(CompressionInterceptor)
+	@ApiResponse({ status: 200, type: UserResponse })
+	@UseInterceptors(FileInterceptor('file'))
+	@Post('changeAvatar')
+	async changeAvatar(@Req() req, @UploadedFile() file: Express.Multer.File): Promise<UserResponse> {
+		return this.userService.changeAvatar(req.user.id, file);
 	}
 }

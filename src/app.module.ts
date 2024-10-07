@@ -14,6 +14,7 @@ import * as path from 'path';
 import * as express from 'express';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { CompressionInterceptor } from './common/interceptors/compressionInterceptor';
+import { FirebaseModule } from './firebase.module';
 
 @Module({
 	imports: [
@@ -33,6 +34,7 @@ import { CompressionInterceptor } from './common/interceptors/compressionInterce
 		AuthModule,
 		UserModule,
 		TokenModule,
+		FirebaseModule.forRoot(),
 	],
 	controllers: [AppController],
 	providers: [

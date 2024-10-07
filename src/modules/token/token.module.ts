@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
 import { PrismaService } from '../../prisma.service';
 import { UserService } from '../user/user.service';
+import { FirebaseModule } from '../../firebase.module';
 
 @Module({
 	controllers: [TokenController],
