@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
@@ -12,9 +12,8 @@ import configuration from './config/global.config';
 import { AcceptLanguageResolver, HeaderResolver, I18nJsonLoader, I18nModule, QueryResolver } from 'nestjs-i18n';
 import * as path from 'path';
 import * as express from 'express';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { CompressionInterceptor } from './common/interceptors/compressionInterceptor';
 import { FirebaseModule } from './firebase.module';
+import { GroupModule } from './modules/group/group.module';
 
 @Module({
 	imports: [
@@ -35,15 +34,12 @@ import { FirebaseModule } from './firebase.module';
 		UserModule,
 		TokenModule,
 		FirebaseModule.forRoot(),
+		GroupModule,
 	],
 	controllers: [AppController],
 	providers: [
 		AppService,
 		PrismaService,
-		// {
-		// 	provide: APP_INTERCEPTOR,
-		// 	useClass: CompressionInterceptor,
-		// },
 	],
 })
 export class AppModule implements NestModule {

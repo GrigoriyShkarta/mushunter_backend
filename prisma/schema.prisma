@@ -8,38 +8,81 @@ datasource db {
 }
 
 model Likes {
-  id      Int  @id @default(autoincrement())
-  likerId Int
-  likedId Int
-  liker   User @relation("LikesGiven", fields: [likerId], references: [id])
-  liked   User @relation("LikesReceived", fields: [likedId], references: [id])
+  id           Int  @id @default(autoincrement())
+  likerUserId  Int?
+  likerGroupId Int?
+  likedUserId  Int?
+  likedGroupId Int?
 
-  @@unique([likerId, likedId])
+  likerUser  User?  @relation("LikesGivenByUser", fields: [likerUserId], references: [id])
+  likerGroup Group? @relation("LikesGivenByGroup", fields: [likerGroupId], references: [id])
+  likedUser  User?  @relation("LikesReceivedByUser", fields: [likedUserId], references: [id])
+  likedGroup Group? @relation("LikesReceivedByGroup", fields: [likedGroupId], references: [id])
+
+  @@unique([likerUserId, likedUserId])
+  @@unique([likerUserId, likedGroupId])
+  @@unique([likerGroupId, likedUserId])
+  @@unique([likerGroupId, likedGroupId])
 }
 
 model User {
-  id               Int         @id @default(autoincrement())
-  createdAt        DateTime    @default(now()) @map("created_at")
-  updatedAt        DateTime    @updatedAt @map("updated_at")
-  email            String      @unique
+  id               Int           @id @default(autoincrement())
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  email            String        @unique
   firstname        String
   lastname         String
   birthday         DateTime?
   description      String?
   education        String?
-  likes            Int         @default(0)
+  likes            Int           @default(0)
   phone            String?
   cityId           Int?
-  city             City?       @relation(fields: [cityId], references: [id])
+  city             City?         @relation(fields: [cityId], references: [id])
   skills           UserSkill[]
-  links            String[]    @default([])
+  links            String[]      @default([])
   styles           UserStyle[]
-  likesGiven       Likes[]     @relation("LikesGiven")
-  likesReceived    Likes[]     @relation("LikesReceived")
-  isLookingForBand Boolean     @default(false)
-  isOpenToOffers   Boolean     @default(false)
-  lookingForSkills Int[]       @default([])
+  likesGiven       Likes[]       @relation("LikesGivenByUser")
+  likesReceived    Likes[]       @relation("LikesReceivedByUser")
+  groupMemberships GroupMember[]
+  isLookingForBand Boolean       @default(false)
+  isOpenToOffers   Boolean       @default(false)
+  lookingForSkills Int[]         @default([])
   avatar           String?
+  groups           Group[]       @relation("GroupMembership")
+}
+
+model Group {
+  id               Int           @id @default(autoincrement())
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  name             String
+  birthday         DateTime?
+  description      String?
+  likes            Int           @default(0)
+  cityId           Int?
+  city             City?         @relation(fields: [cityId], references: [id])
+  links            String[]      @default([])
+  styles           UserStyle[]
+  likesGiven       Likes[]       @relation("LikesGivenByGroup")
+  likesReceived    Likes[]       @relation("LikesReceivedByGroup")
+  members          GroupMember[]
+  isOpenToOffers   Boolean       @default(false)
+  lookingForSkills Int[]         @default([])
+  avatar           String?
+  creatorId        Int?
+  creator          User?         @relation("GroupMembership", fields: [creatorId], references: [id])
+}
+
+model GroupMember {
+  id      Int   @id @default(autoincrement())
+  userId  Int
+  user    User  @relation(fields: [userId], references: [id])
+  groupId Int
+  group   Group @relation(fields: [groupId], references: [id])
+  role    Int[] // Список id навыков, которые представляют роль пользователя в группе
+
+  @@unique([userId, groupId]) // Один пользователь может быть только одним участником конкретной группы
 }
 
 model UserSkill {
@@ -54,13 +97,13 @@ model UserSkill {
 }
 
 model UserStyle {
-  id      Int   @id @default(autoincrement())
+  id      Int    @id @default(autoincrement())
   userId  Int
+  user    User   @relation(fields: [userId], references: [id])
   styleId Int
-  user    User  @relation(fields: [userId], references: [id])
-  style   Style @relation(fields: [styleId], references: [id])
-
-  @@unique([userId, styleId])
+  style   Style  @relation(fields: [styleId], references: [id])
+  groupId Int?
+  group   Group? @relation(fields: [groupId], references: [id])
 }
 
 model Skill {
@@ -70,9 +113,10 @@ model Skill {
 }
 
 model City {
-  id    Int    @id @default(autoincrement())
-  name  String
-  users User[]
+  id     Int     @id @default(autoincrement())
+  name   String
+  users  User[]
+  groups Group[]
 }
 
 model Style {

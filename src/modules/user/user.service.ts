@@ -38,7 +38,7 @@ export class UserService {
 		});
 
 		if (!user) {
-			throw new NotFoundException(AppError.USER_LOGIN_ERROR);
+			return null;
 		}
 
 		const hasLiked = await this.hasLikedUser(currentUserId, user.id);
@@ -146,21 +146,18 @@ export class UserService {
 	}
 
 	async likeUser(likerId: number, likedId: number): Promise<UserResponse> {
-		const existingLike = await this.prisma.likes.findUnique({
+		const existingLike = await this.prisma.likes.findFirst({
 			where: {
-				likerId_likedId: {
-					likerId,
-					likedId,
-				},
+				likerUserId: likerId,
+				likedUserId: likedId,
 			},
 		});
 
 		if (existingLike) {
 			await this.prisma.likes.delete({
-				where: {
-					id: existingLike.id,
-				},
+				where: { id: existingLike.id },
 			});
+
 			await this.prisma.user.update({
 				where: { id: likedId },
 				data: { likes: { decrement: 1 } },
@@ -168,8 +165,8 @@ export class UserService {
 		} else {
 			await this.prisma.likes.create({
 				data: {
-					likerId,
-					likedId,
+					likerUserId: likerId,
+					likedUserId: likedId,
 				},
 			});
 
@@ -183,18 +180,14 @@ export class UserService {
 	}
 
 	async hasLikedUser(likerId: number, likedId: number): Promise<boolean> {
-		console.log('likerId', likerId, likedId);
-
 		if (!likerId) {
 			return false;
 		}
 
-		const like = await this.prisma.likes.findUnique({
+		const like = await this.prisma.likes.findFirst({
 			where: {
-				likerId_likedId: {
-					likerId,
-					likedId,
-				},
+				likerUserId: likerId,
+				likedUserId: likedId,
 			},
 		});
 
@@ -288,6 +281,7 @@ export class UserService {
 			isOpenToOffers: user.isOpenToOffers ?? false,
 			lookingForSkills: user.lookingForSkills ?? [],
 			avatar: user?.avatar ?? '',
+			groups: user?.groups ?? [],
 		};
 	}
 }

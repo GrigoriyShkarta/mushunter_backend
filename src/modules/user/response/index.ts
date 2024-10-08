@@ -72,6 +72,7 @@ export class UserResponse {
 
 	@ApiProperty()
 	@IsOptional()
+	@IsArray()
 	links: string[];
 
 	@ApiProperty()
@@ -93,6 +94,10 @@ export class UserResponse {
 	@ApiProperty()
 	@IsUrl()
 	avatar: string;
+
+	@ApiProperty()
+	@IsArray()
+	groups: Group[];
 }
 
 export class SettingsResponse {
@@ -136,4 +141,31 @@ export class Styles {
 	@ApiProperty()
 	@IsString()
 	name: string;
+}
+
+export class Group {
+	@ApiProperty()
+	@IsNumber()
+	id: number;
+
+	@ApiProperty()
+	@IsString()
+	name: string;
+
+	@ApiProperty()
+	@IsString()
+	avatar: string;
+
+	@ApiProperty()
+	@IsArray()
+	skills: GroupSkill[];
+}
+
+export class GroupSkill {
+	@ApiProperty()
+	@IsNumber()
+	id: number;
+
+	@ApiProperty()
+	name: TranslatedObj;
 }
