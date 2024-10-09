@@ -70,8 +70,8 @@ model Group {
   isOpenToOffers   Boolean       @default(false)
   lookingForSkills Int[]         @default([])
   avatar           String?
-  creatorId        Int?
-  creator          User?         @relation("GroupMembership", fields: [creatorId], references: [id])
+  creatorId        Int
+  creator          User          @relation("GroupMembership", fields: [creatorId], references: [id])
 }
 
 model GroupMember {
@@ -98,10 +98,10 @@ model UserSkill {
 
 model UserStyle {
   id      Int    @id @default(autoincrement())
-  userId  Int
-  user    User   @relation(fields: [userId], references: [id])
-  styleId Int
-  style   Style  @relation(fields: [styleId], references: [id])
+  userId  Int?
+  user    User?  @relation(fields: [userId], references: [id])
+  styleId Int?
+  style   Style? @relation(fields: [styleId], references: [id])
   groupId Int?
   group   Group? @relation(fields: [groupId], references: [id])
 }

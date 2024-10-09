@@ -59,7 +59,6 @@ export class AuthService {
 	async socialMediaAuth(dto: Email): Promise<boolean | AuthResponse> {
 		try {
 			const user = await this.userService.getUser(undefined, undefined, dto.email);
-			console.log('user', user);
 			if (user) {
 				const tokens = this.tokenService.issueTokens(user.id);
 				return { user, tokens };

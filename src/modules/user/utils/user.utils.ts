@@ -27,6 +27,15 @@ export const includeUserRelations = {
 			},
 		},
 	},
+	groupMemberships: {
+		include: {
+			group: {
+				include: {
+					members: true,
+				},
+			},
+		},
+	},
 };
 
 export const translateField = (i18n: I18nService, field: string, lang: string): string => {

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChangeDescriptionDto, ChangeMainDataDto, ChangeSkillsDataDto, CreateUserDto } from './dto';
 import { PrismaService } from '../../prisma.service';
-import { SettingsResponse, UserResponse } from './response';
+import { Group, SettingsResponse, UserResponse } from './response';
 import { I18nService } from 'nestjs-i18n';
 import {
 	formatLookingForSkills,
@@ -42,15 +42,41 @@ export class UserService {
 		}
 
 		const hasLiked = await this.hasLikedUser(currentUserId, user.id);
-		const lookingForSkills = formatLookingForSkills(
-			this.i18n,
-			await this.searchLookingSkills(user.lookingForSkills),
+
+		let lookingForSkills;
+
+		if (user.lookingForSkills.length > 0) {
+			lookingForSkills = formatLookingForSkills(
+				this.i18n,
+				await this.searchLookingSkills(user.lookingForSkills),
+			);
+		}
+
+		const groups = await Promise.all(
+			user.groupMemberships.map(async (membership) => {
+				const memberRoles = membership.group.members.find((m) => m.userId === user.id)?.role;
+
+				const member = memberRoles
+					? formatLookingForSkills(
+							this.i18n,
+							await this.searchLookingSkills(memberRoles.map((role) => role)),
+						)
+					: [];
+
+				return {
+					id: membership.group.id,
+					name: membership.group.name,
+					avatar: membership.group.avatar ?? '',
+					skills: member, // Преобразованные роли
+				};
+			}),
 		);
 
 		return {
 			...this.formatUser(user),
 			hasLiked,
 			lookingForSkills,
+			groups,
 		};
 	}
 
@@ -281,7 +307,7 @@ export class UserService {
 			isOpenToOffers: user.isOpenToOffers ?? false,
 			lookingForSkills: user.lookingForSkills ?? [],
 			avatar: user?.avatar ?? '',
-			groups: user?.groups ?? [],
+			groups: user?.groupMemberships ?? [],
 		};
 	}
 }
