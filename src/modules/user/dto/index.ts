@@ -105,6 +105,11 @@ class SkillDto {
 	@IsNumber()
 	@IsNotEmpty()
 	experience: number;
+
+	@ApiProperty()
+	@IsString()
+	@IsOptional()
+	description: string;
 }
 
 export class ChangeSkillsDataDto {

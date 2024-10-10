@@ -145,11 +145,13 @@ export class UserService {
 					},
 					update: {
 						experience: skill.experience,
+						description: skill?.description,
 					},
 					create: {
 						userId: id,
 						skillId: skill.skill,
 						experience: skill.experience,
+						description: skill?.description,
 					},
 				});
 			}),

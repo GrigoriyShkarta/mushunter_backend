@@ -43,13 +43,14 @@ export const translateField = (i18n: I18nService, field: string, lang: string): 
 };
 
 export const formatSkills = (i18n: I18nService, skills: any[]): any[] => {
-	return skills.map(({ skill, experience }) => ({
+	return skills.map(({ skill, experience, description }) => ({
 		id: skill.id,
 		name: {
 			en: translateField(i18n, `skill.${skill.name}`, 'en'),
 			ua: translateField(i18n, `skill.${skill.name}`, 'ua'),
 		},
 		experience,
+		description,
 	}));
 };
 

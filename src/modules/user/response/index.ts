@@ -131,6 +131,11 @@ export class Skills {
 	@ApiProperty()
 	@IsNumber()
 	experience: number;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsString()
+	description: string;
 }
 
 export class Styles {
