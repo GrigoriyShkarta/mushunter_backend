@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChangeDescriptionDto, ChangeMainDataDto, ChangeSkillsDataDto, CreateUserDto } from './dto';
 import { PrismaService } from '../../prisma.service';
-import { Group, SettingsResponse, UserResponse } from './response';
+import { SettingsResponse, UserResponse } from './response';
 import { I18nService } from 'nestjs-i18n';
 import {
 	formatLookingForSkills,
@@ -10,7 +10,6 @@ import {
 	includeUserRelations,
 	translateField,
 } from './utils/user.utils';
-import { AppError } from '../../common/constants/error';
 import { FirebaseRepository } from '../../firebase.service';
 import * as admin from 'firebase-admin';
 
@@ -43,15 +42,6 @@ export class UserService {
 
 		const hasLiked = await this.hasLikedUser(currentUserId, user.id);
 
-		let lookingForSkills;
-
-		if (user.lookingForSkills.length > 0) {
-			lookingForSkills = formatLookingForSkills(
-				this.i18n,
-				await this.searchLookingSkills(user.lookingForSkills),
-			);
-		}
-
 		const groups = await Promise.all(
 			user.groupMemberships.map(async (membership) => {
 				const memberRoles = membership.group.members.find((m) => m.userId === user.id)?.role;
@@ -67,16 +57,37 @@ export class UserService {
 					id: membership.group.id,
 					name: membership.group.name,
 					avatar: membership.group.avatar ?? '',
-					skills: member, // Преобразованные роли
+					skills: member,
 				};
 			}),
 		);
 
+		const skills = await Promise.all(
+			user.skills.map(async (skill) => {
+				const styles = await this.searchLookingSkills(skill.styleIds);
+
+				return formatSkills(this.i18n, user.skills, styles);
+			}),
+		);
+
+		console.log('skills', skills);
+
+		const lookingForSkills = await Promise.all(
+			user.lookingForSkills.map(async (skill) => {
+				const styles = await this.searchLookingSkills(skill.styleIds);
+
+				return formatSkills(this.i18n, user.skills, styles);
+			}),
+		);
+
+		console.log('lookingForSkills', lookingForSkills);
+
 		return {
 			...this.formatUser(user),
 			hasLiked,
-			lookingForSkills,
 			groups,
+			skills: skills.flat(),
+			lookingForSkills: lookingForSkills.flat(),
 		};
 	}
 
@@ -113,8 +124,6 @@ export class UserService {
 			phone: dto?.phone,
 			links: dto.links,
 			isLookingForBand: dto.isLookingForBand,
-			isOpenToOffers: dto.isOpenToOffers,
-			lookingForSkills: dto.lookingForSkills,
 		};
 
 		await this.prisma.user.update({
@@ -136,22 +145,35 @@ export class UserService {
 
 		await Promise.all(
 			dto.skills.map((skill) => {
-				return this.prisma.userSkill.upsert({
-					where: {
-						userId_skillId: {
-							userId: id,
-							skillId: skill.skill,
-						},
-					},
-					update: {
-						experience: skill.experience,
-						description: skill?.description,
-					},
-					create: {
+				return this.prisma.userSkill.create({
+					data: {
 						userId: id,
 						skillId: skill.skill,
 						experience: skill.experience,
 						description: skill?.description,
+						styleIds: skill.styles,
+					},
+				});
+			}),
+		);
+
+		return this.getUser(id);
+	}
+
+	async changeInSearch(id: number, dto: ChangeSkillsDataDto): Promise<UserResponse> {
+		await this.prisma.userSkillRequirement.deleteMany({
+			where: { userId: id },
+		});
+
+		await Promise.all(
+			dto.skills.map((skill) => {
+				return this.prisma.userSkillRequirement.create({
+					data: {
+						userId: id,
+						skillId: skill.skill,
+						experience: skill.experience,
+						description: skill?.description,
+						styleIds: skill.styles,
 					},
 				});
 			}),
@@ -302,12 +324,13 @@ export class UserService {
 			likes: user.likes,
 			hasLiked: user.hasLiked ?? false,
 			city: translatedCityName,
-			skills: formatSkills(this.i18n, user?.skills ?? []),
+			skills: user.skills ?? [],
 			links: user?.links ?? [],
 			styles: formatStyles(user?.styles ?? []),
 			isLookingForBand: user.isLookingForBand ?? false,
-			isOpenToOffers: user.isOpenToOffers ?? false,
+			position: user?.poposition ?? undefined,
 			lookingForSkills: user.lookingForSkills ?? [],
+			descriptionPosition: user.descriptionPosition ?? undefined,
 			avatar: user?.avatar ?? '',
 			groups: user?.groupMemberships ?? [],
 		};

@@ -12,6 +12,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { Skill } from '@prisma/client';
+import { Skills } from '../response';
 
 export class CreateUserDto {
 	@ApiProperty()
@@ -88,11 +89,22 @@ export class ChangeMainDataDto {
 	@IsOptional()
 	@IsBoolean()
 	isOpenToOffers: boolean;
+}
+
+export class ChangeInSearch {
+	@ApiProperty()
+	@IsArray()
+	lookingForSkills: SearchSkill[];
 
 	@ApiProperty()
 	@IsOptional()
-	@IsArray()
-	lookingForSkills: number[];
+	@IsBoolean()
+	isLookingForBand: boolean;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsString()
+	description: string;
 }
 
 class SkillDto {
@@ -110,6 +122,11 @@ class SkillDto {
 	@IsString()
 	@IsOptional()
 	description: string;
+
+	@ApiProperty()
+	@IsArray()
+	@IsOptional()
+	styles: number[];
 }
 
 export class ChangeSkillsDataDto {
@@ -136,4 +153,20 @@ export class ToggleLikeDto {
 export class ChangeAvatar {
 	@ApiProperty({ type: 'string', format: 'binary' })
 	file: Express.Multer.File;
+}
+
+export class SearchSkill {
+	@ApiProperty()
+	@IsNumber()
+	skill: number;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsNumber()
+	experience: number;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsString()
+	description: string;
 }

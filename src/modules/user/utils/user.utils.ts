@@ -1,4 +1,5 @@
 import { I18nService } from 'nestjs-i18n';
+import { Skills } from '../response';
 
 export const includeUserRelations = {
 	city: {
@@ -36,19 +37,30 @@ export const includeUserRelations = {
 			},
 		},
 	},
+	lookingForSkills: {
+		include: {
+			skill: {
+				select: {
+					id: true,
+					name: true,
+				},
+			},
+		},
+	},
 };
 
 export const translateField = (i18n: I18nService, field: string, lang: string): string => {
 	return i18n.t(`translation.${field}`, { lang });
 };
 
-export const formatSkills = (i18n: I18nService, skills: any[]): any[] => {
+export const formatSkills = (i18n: I18nService, skills: any[], styles?: any[]): Skills[] => {
 	return skills.map(({ skill, experience, description }) => ({
 		id: skill.id,
 		name: {
 			en: translateField(i18n, `skill.${skill.name}`, 'en'),
 			ua: translateField(i18n, `skill.${skill.name}`, 'ua'),
 		},
+		styles,
 		experience,
 		description,
 	}));

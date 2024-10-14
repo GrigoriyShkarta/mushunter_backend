@@ -84,12 +84,16 @@ export class UserResponse {
 	isLookingForBand: boolean;
 
 	@ApiProperty()
-	@IsBoolean()
-	isOpenToOffers: boolean;
+	@IsNumber()
+	position: number;
+
+	@ApiProperty()
+	@IsNumber()
+	descriptionPosition: string;
 
 	@ApiProperty()
 	@IsArray()
-	lookingForSkills: GetSkills[];
+	lookingForSkills: Skills[];
 
 	@ApiProperty()
 	@IsUrl()
@@ -136,6 +140,11 @@ export class Skills {
 	@IsOptional()
 	@IsString()
 	description: string;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsArray()
+	styles: Styles[];
 }
 
 export class Styles {

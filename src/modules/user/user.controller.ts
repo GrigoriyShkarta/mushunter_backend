@@ -109,12 +109,22 @@ export class UserController {
 	@ApiTags('USER')
 	@UseGuards(AuthGuard('jwt'))
 	@UsePipes(new ValidationPipe())
-	// @UsePipes(DecompressPipe)
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 200, type: UserResponse })
 	@UseInterceptors(FileInterceptor('file'))
 	@Post('changeAvatar')
 	async changeAvatar(@Req() req, @UploadedFile() file: Express.Multer.File): Promise<UserResponse> {
 		return this.userService.changeAvatar(req.user.id, file);
+	}
+
+	@ApiTags('USER')
+	@UseGuards(AuthGuard('jwt'))
+	@UsePipes(new ValidationPipe())
+	@UsePipes(DecompressPipe)
+	@UseInterceptors(CompressionInterceptor)
+	@ApiResponse({ status: 200, type: UserResponse })
+	@Post('changeInSearch')
+	async changeInSearch(@Req() req, @Body() dto: ChangeSkillsDataDto): Promise<UserResponse> {
+		return this.userService.changeInSearch(req.user.id, dto);
 	}
 }
