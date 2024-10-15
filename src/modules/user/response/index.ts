@@ -84,6 +84,10 @@ export class UserResponse {
 	isLookingForBand: boolean;
 
 	@ApiProperty()
+	@IsArray()
+	stylesLookingForBand: Styles[];
+
+	@ApiProperty()
 	@IsNumber()
 	position: number;
 

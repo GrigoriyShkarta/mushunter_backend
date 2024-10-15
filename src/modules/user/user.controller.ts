@@ -19,7 +19,7 @@ import { CompressionInterceptor } from '../../common/interceptors/compressionInt
 import { DecompressPipe } from '../../common/pipes/decompressPipe';
 import {
 	ChangeAvatar,
-	ChangeDescriptionDto,
+	ChangeDescriptionDto, ChangeInSearchDataDto,
 	ChangeMainDataDto,
 	ChangeSkillsDataDto,
 	GetUserDto,
@@ -124,7 +124,7 @@ export class UserController {
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 200, type: UserResponse })
 	@Post('changeInSearch')
-	async changeInSearch(@Req() req, @Body() dto: ChangeSkillsDataDto): Promise<UserResponse> {
+	async changeInSearch(@Req() req, @Body() dto: ChangeInSearchDataDto): Promise<UserResponse> {
 		return this.userService.changeInSearch(req.user.id, dto);
 	}
 }

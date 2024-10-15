@@ -1,5 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ChangeDescriptionDto, ChangeMainDataDto, ChangeSkillsDataDto, CreateUserDto } from './dto';
+import {
+	ChangeDescriptionDto,
+	ChangeInSearchDataDto,
+	ChangeMainDataDto,
+	ChangeSkillsDataDto,
+	CreateUserDto,
+} from './dto';
 import { PrismaService } from '../../prisma.service';
 import { SettingsResponse, UserResponse } from './response';
 import { I18nService } from 'nestjs-i18n';
@@ -64,23 +70,25 @@ export class UserService {
 
 		const skills = await Promise.all(
 			user.skills.map(async (skill) => {
-				const styles = await this.searchLookingSkills(skill.styleIds);
+				const styles = await this.searchLookingStyles(skill.styleIds);
 
-				return formatSkills(this.i18n, user.skills, styles);
+				return formatSkills(this.i18n, [skill], styles);
 			}),
 		);
-
-		console.log('skills', skills);
 
 		const lookingForSkills = await Promise.all(
 			user.lookingForSkills.map(async (skill) => {
 				const styles = await this.searchLookingSkills(skill.styleIds);
 
-				return formatSkills(this.i18n, user.skills, styles);
+				return formatSkills(this.i18n, [skill], styles);
 			}),
 		);
 
-		console.log('lookingForSkills', lookingForSkills);
+		const stylesLookingForBand = await Promise.all(
+			await this.searchLookingStyles(user.stylesLookingForBand),
+		);
+
+		console.log('stylesLookingForBand', stylesLookingForBand);
 
 		return {
 			...this.formatUser(user),
@@ -88,6 +96,7 @@ export class UserService {
 			groups,
 			skills: skills.flat(),
 			lookingForSkills: lookingForSkills.flat(),
+			stylesLookingForBand,
 		};
 	}
 
@@ -160,7 +169,17 @@ export class UserService {
 		return this.getUser(id);
 	}
 
-	async changeInSearch(id: number, dto: ChangeSkillsDataDto): Promise<UserResponse> {
+	async changeInSearch(id: number, dto: ChangeInSearchDataDto): Promise<UserResponse> {
+		await this.prisma.user.update({
+			where: { id },
+			data: {
+				isLookingForBand: dto.isLookingForBand,
+				position: dto.position,
+				descriptionPosition: dto.descriptionPosition,
+				stylesLookingForBand: dto.stylesLookingForBand,
+			},
+		});
+
 		await this.prisma.userSkillRequirement.deleteMany({
 			where: { userId: id },
 		});
@@ -295,6 +314,16 @@ export class UserService {
 		});
 	}
 
+	private searchLookingStyles(styleIds: number[]) {
+		return this.prisma.style.findMany({
+			where: {
+				id: {
+					in: styleIds,
+				},
+			},
+		});
+	}
+
 	private async updateUserStyles(userId: number, styles: number[]): Promise<void> {
 		await this.prisma.userStyle.deleteMany({ where: { userId } });
 
@@ -329,6 +358,7 @@ export class UserService {
 			styles: formatStyles(user?.styles ?? []),
 			isLookingForBand: user.isLookingForBand ?? false,
 			position: user?.poposition ?? undefined,
+			stylesLookingForBand: user.stylesLookingForBand ?? [],
 			lookingForSkills: user.lookingForSkills ?? [],
 			descriptionPosition: user.descriptionPosition ?? undefined,
 			avatar: user?.avatar ?? '',

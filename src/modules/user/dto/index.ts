@@ -137,6 +137,33 @@ export class ChangeSkillsDataDto {
 	skills: SkillDto[];
 }
 
+export class ChangeInSearchDataDto {
+	@ApiProperty({ type: [SkillDto] })
+	@IsArray()
+	@ValidateNested({ each: true })
+	@Type(() => SkillDto)
+	skills: SkillDto[];
+
+	@ApiProperty()
+	@IsBoolean()
+	isLookingForBand: boolean;
+
+	@ApiProperty()
+	@IsArray()
+	@IsOptional()
+	stylesLookingForBand: number[];
+
+	@ApiProperty()
+	@IsNumber()
+	@IsOptional()
+	position: number;
+
+	@ApiProperty()
+	@IsString()
+	@IsOptional()
+	descriptionPosition: string;
+}
+
 export class ChangeDescriptionDto {
 	@ApiProperty()
 	@IsOptional()

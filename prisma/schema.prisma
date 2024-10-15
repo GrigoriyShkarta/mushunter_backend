@@ -26,31 +26,32 @@ model Likes {
 }
 
 model User {
-  id                  Int                    @id @default(autoincrement())
-  createdAt           DateTime               @default(now()) @map("created_at")
-  updatedAt           DateTime               @updatedAt @map("updated_at")
-  email               String                 @unique
-  firstname           String
-  lastname            String
-  birthday            DateTime?
-  description         String?
-  education           String?
-  likes               Int                    @default(0)
-  phone               String?
-  cityId              Int?
-  city                City?                  @relation(fields: [cityId], references: [id])
-  skills              UserSkill[]
-  links               String[]               @default([])
-  styles              UserStyle[]
-  likesGiven          Likes[]                @relation("LikesGivenByUser")
-  likesReceived       Likes[]                @relation("LikesReceivedByUser")
-  groupMemberships    GroupMember[]
-  isLookingForBand    Boolean                @default(false)
-  position            Int?
-  descriptionPosition String?
-  lookingForSkills    UserSkillRequirement[]
-  avatar              String?
-  groups              Group[]                @relation("GroupMembership")
+  id                   Int                    @id @default(autoincrement())
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
+  email                String                 @unique
+  firstname            String
+  lastname             String
+  birthday             DateTime?
+  description          String?
+  education            String?
+  likes                Int                    @default(0)
+  phone                String?
+  cityId               Int?
+  city                 City?                  @relation(fields: [cityId], references: [id])
+  skills               UserSkill[]
+  links                String[]               @default([])
+  styles               UserStyle[]
+  likesGiven           Likes[]                @relation("LikesGivenByUser")
+  likesReceived        Likes[]                @relation("LikesReceivedByUser")
+  groupMemberships     GroupMember[]
+  isLookingForBand     Boolean                @default(false)
+  stylesLookingForBand Int[]                  @default([])
+  position             Int?
+  descriptionPosition  String?
+  lookingForSkills     UserSkillRequirement[]
+  avatar               String?
+  groups               Group[]                @relation("GroupMembership")
 }
 
 model Group {
