@@ -127,6 +127,11 @@ class SkillDto {
 	@IsArray()
 	@IsOptional()
 	styles: number[];
+
+	@ApiProperty()
+	@IsNumber()
+	@IsOptional()
+	age: number;
 }
 
 export class ChangeSkillsDataDto {

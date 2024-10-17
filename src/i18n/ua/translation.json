@@ -8,13 +8,12 @@
         "Dnipro": "Дніпро"
     },
     "skill": {
-        "guitar": "гітара",
-        "electric guitar": "електрогітара",
-        "vocal": "вокал",
-        "drums": "барабани",
-        "keys": "клавіши",
+        "electric guitar": "гітарист (елкетрогітара)",
+        "vocal": "вокаліст",
+        "drums": "барабанщик",
+        "keys": "клавішник",
         "manager": "менеджер",
-        "acoustic-guitar": "акустична гітара",
-        "bass-guitar": "бас гітара"
+        "acoustic-guitar": "гітарист (акустична гітара)",
+        "bass-guitar": "бас гітарист"
     }
 }

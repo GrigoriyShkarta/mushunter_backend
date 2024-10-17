@@ -78,9 +78,10 @@ export class UserService {
 
 		const lookingForSkills = await Promise.all(
 			user.lookingForSkills.map(async (skill) => {
-				const styles = await this.searchLookingSkills(skill.styleIds);
+				const styles = await this.searchLookingStyles(skill.styleIds);
+				const age = await this.searchLookingAge([skill.age]);
 
-				return formatSkills(this.i18n, [skill], styles);
+				return formatSkills(this.i18n, [skill], styles, age[0]);
 			}),
 		);
 
@@ -88,7 +89,8 @@ export class UserService {
 			await this.searchLookingStyles(user.stylesLookingForBand),
 		);
 
-		console.log('stylesLookingForBand', stylesLookingForBand);
+		const searchSkill = await this.searchLookingSkills([user.position]);
+		const position = formatLookingForSkills(this.i18n, searchSkill)[0];
 
 		return {
 			...this.formatUser(user),
@@ -97,14 +99,16 @@ export class UserService {
 			skills: skills.flat(),
 			lookingForSkills: lookingForSkills.flat(),
 			stylesLookingForBand,
+			position,
 		};
 	}
 
 	async getSettings(): Promise<SettingsResponse> {
-		const [cities, styles, skills] = await Promise.all([
+		const [cities, styles, skills, age] = await Promise.all([
 			this.prisma.city.findMany({ select: { id: true, name: true } }),
 			this.prisma.style.findMany({ select: { id: true, name: true } }),
 			this.prisma.skill.findMany({ select: { id: true, name: true } }),
+			this.prisma.age.findMany({ select: { id: true, name: true } }),
 		]);
 
 		const translateItems = (items: any[], type: string) =>
@@ -120,6 +124,7 @@ export class UserService {
 			styles,
 			cities: translateItems(cities, 'city'),
 			skills: translateItems(skills, 'skill'),
+			age,
 		};
 	}
 
@@ -170,35 +175,43 @@ export class UserService {
 	}
 
 	async changeInSearch(id: number, dto: ChangeInSearchDataDto): Promise<UserResponse> {
-		await this.prisma.user.update({
-			where: { id },
-			data: {
-				isLookingForBand: dto.isLookingForBand,
-				position: dto.position,
-				descriptionPosition: dto.descriptionPosition,
-				stylesLookingForBand: dto.stylesLookingForBand,
-			},
-		});
-
-		await this.prisma.userSkillRequirement.deleteMany({
-			where: { userId: id },
-		});
-
-		await Promise.all(
-			dto.skills.map((skill) => {
-				return this.prisma.userSkillRequirement.create({
+		try {
+			await this.prisma.$transaction(async (prisma) => {
+				await prisma.user.update({
+					where: { id },
 					data: {
-						userId: id,
-						skillId: skill.skill,
-						experience: skill.experience,
-						description: skill?.description,
-						styleIds: skill.styles,
+						isLookingForBand: dto.isLookingForBand,
+						position: dto.position,
+						descriptionPosition: dto.descriptionPosition,
+						stylesLookingForBand: dto.stylesLookingForBand,
 					},
 				});
-			}),
-		);
 
-		return this.getUser(id);
+				await prisma.userSkillRequirement.deleteMany({
+					where: { userId: id },
+				});
+
+				await Promise.all(
+					dto.skills.map((skill) => {
+						return prisma.userSkillRequirement.create({
+							data: {
+								userId: id,
+								skillId: skill.skill,
+								experience: skill.experience,
+								description: skill?.description,
+								styleIds: skill.styles,
+								age: skill.age,
+							},
+						});
+					}),
+				);
+			});
+
+			return this.getUser(id);
+		} catch (error) {
+			console.error('Error updating search settings', error);
+			throw new Error('Failed to update search settings');
+		}
 	}
 
 	async changeDescription(id: number, dto: ChangeDescriptionDto): Promise<UserResponse> {
@@ -319,6 +332,16 @@ export class UserService {
 			where: {
 				id: {
 					in: styleIds,
+				},
+			},
+		});
+	}
+
+	private searchLookingAge(ageIds: number[]) {
+		return this.prisma.age.findMany({
+			where: {
+				id: {
+					in: ageIds,
 				},
 			},
 		});

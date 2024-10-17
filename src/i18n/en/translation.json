@@ -8,12 +8,12 @@
         "Dnipro": "Dnipro"
     },
     "skill": {
-        "electric guitar": "electric guitar",
-        "vocal": "vocal",
-        "drums": "drums",
-        "keys": "keys",
+        "electric guitar": "guitarist (electric guitar)",
+        "vocal": "vocalist",
+        "drums": "drummer",
+        "keys": "keyboard player",
         "manager": "manager",
-        "acoustic-guitar": "acoustic guitar",
-        "bass-guitar": "bass guitar"
+        "acoustic-guitar": "guitarist (acoustic guitar)",
+        "bass-guitar": "bass guitarist"
     }
 }

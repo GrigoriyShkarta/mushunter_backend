@@ -11,6 +11,15 @@ class TranslatedObj {
 	en: string;
 }
 
+export class Position {
+	@ApiProperty()
+	@IsNumber()
+	id: number;
+
+	@ApiProperty()
+	name: TranslatedObj;
+}
+
 export class City {
 	@ApiProperty()
 	@IsNumber()
@@ -88,8 +97,7 @@ export class UserResponse {
 	stylesLookingForBand: Styles[];
 
 	@ApiProperty()
-	@IsNumber()
-	position: number;
+	position: Position;
 
 	@ApiProperty()
 	@IsNumber()
@@ -117,6 +125,9 @@ export class SettingsResponse {
 
 	@ApiProperty()
 	styles: Styles[];
+
+	@ApiProperty()
+	age: { id: number; name: string }[];
 }
 
 export class GetSkills {
@@ -149,6 +160,10 @@ export class Skills {
 	@IsOptional()
 	@IsArray()
 	styles: Styles[];
+
+	@ApiProperty()
+	@IsOptional()
+	age: { id: number; name: string };
 }
 
 export class Styles {
