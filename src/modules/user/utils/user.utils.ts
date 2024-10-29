@@ -59,6 +59,7 @@ export const formatSkills = (
 	styles?: any[],
 	age?: any,
 ): Skills[] => {
+	console.log('skillsCheck', skills);
 	return skills.map(({ skill, experience, description }) => ({
 		id: skill.id,
 		name: {

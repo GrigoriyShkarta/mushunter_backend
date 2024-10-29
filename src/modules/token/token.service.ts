@@ -37,7 +37,11 @@ export class TokenService {
 			const tokens = this.issueTokens(user.id);
 			return { user, tokens };
 		} catch (e) {
-			throw new Error(e);
+			if (e.name === 'TokenExpiredError') {
+				throw new UnauthorizedException('Refresh token has expired. Please re-authenticate.');
+			} else {
+				throw new Error(e.message);
+			}
 		}
 	}
 

@@ -55,24 +55,24 @@ model User {
 }
 
 model Group {
-  id            Int           @id @default(autoincrement())
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
-  name          String
-  birthday      DateTime?
-  description   String?
-  likes         Int           @default(0)
-  cityId        Int?
-  city          City?         @relation(fields: [cityId], references: [id])
-  links         String[]      @default([])
-  styles        UserStyle[]
-  likesGiven    Likes[]       @relation("LikesGivenByGroup")
-  likesReceived Likes[]       @relation("LikesReceivedByGroup")
-  members       GroupMember[]
-  // lookingForSkills SkillRequirement[]
-  avatar        String?
-  creatorId     Int
-  creator       User          @relation("GroupMembership", fields: [creatorId], references: [id])
+  id               Int                     @id @default(autoincrement())
+  createdAt        DateTime                @default(now()) @map("created_at")
+  updatedAt        DateTime                @updatedAt @map("updated_at")
+  name             String
+  birthday         DateTime?
+  description      String?
+  likes            Int                     @default(0)
+  cityId           Int?
+  city             City?                   @relation(fields: [cityId], references: [id])
+  links            String[]                @default([])
+  styles           UserStyle[]
+  likesGiven       Likes[]                 @relation("LikesGivenByGroup")
+  likesReceived    Likes[]                 @relation("LikesReceivedByGroup")
+  members          GroupMember[]
+  lookingForSkills GroupSkillRequirement[]
+  avatar           String?
+  creatorId        Int
+  creator          User                    @relation("GroupMembership", fields: [creatorId], references: [id])
 }
 
 model GroupMember {
@@ -100,6 +100,20 @@ model UserSkillRequirement {
   @@unique([userId, skillId])
 }
 
+model GroupSkillRequirement {
+  id          Int     @id @default(autoincrement())
+  groupId     Int
+  skillId     Int
+  styleIds    Int[]   @default([])
+  experience  Int
+  age         Int?
+  description String?
+  group       Group   @relation(fields: [groupId], references: [id])
+  skill       Skill   @relation(fields: [skillId], references: [id])
+
+  @@unique([groupId, skillId])
+}
+
 model UserSkill {
   id          Int     @id @default(autoincrement())
   userId      Int
@@ -124,10 +138,11 @@ model UserStyle {
 }
 
 model Skill {
-  id                   Int                    @id @default(autoincrement())
-  name                 String
-  users                UserSkill[]
-  UserSkillRequirement UserSkillRequirement[]
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  users                 UserSkill[]
+  UserSkillRequirement  UserSkillRequirement[]
+  GroupSkillRequirement GroupSkillRequirement[]
 }
 
 model City {

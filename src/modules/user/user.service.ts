@@ -89,7 +89,7 @@ export class UserService {
 			await this.searchLookingStyles(user.stylesLookingForBand),
 		);
 
-		const searchSkill = await this.searchLookingSkills([user.position]);
+		const searchSkill = await this.searchLookingSkills(user.position ? [user.position] : []);
 		const position = formatLookingForSkills(this.i18n, searchSkill)[0];
 
 		return {
@@ -318,6 +318,8 @@ export class UserService {
 	}
 
 	private searchLookingSkills(skillIds: number[]) {
+		console.log('skillIds', skillIds);
+
 		return this.prisma.skill.findMany({
 			where: {
 				id: {

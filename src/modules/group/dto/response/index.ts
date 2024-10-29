@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsDate, IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsArray, IsBoolean, IsDate, IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
 import { City, GetSkills, GroupSkill, Styles } from '../../../user/response';
 
 class Member {
@@ -47,6 +47,10 @@ export class GroupResponse {
 	@IsOptional()
 	@IsNumber()
 	likes: number;
+
+	@ApiProperty()
+	@IsBoolean()
+	hasLiked: boolean;
 
 	@ApiProperty()
 	@IsOptional()
