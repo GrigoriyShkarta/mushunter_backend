@@ -53,13 +53,7 @@ export const translateField = (i18n: I18nService, field: string, lang: string): 
 	return i18n.t(`translation.${field}`, { lang });
 };
 
-export const formatSkills = (
-	i18n: I18nService,
-	skills: any[],
-	styles?: any[],
-	age?: any,
-): Skills[] => {
-	console.log('skillsCheck', skills);
+export const formatSkills = (i18n: I18nService, skills: any[], styles?: any[], age?: any): Skills[] => {
 	return skills.map(({ skill, experience, description }) => ({
 		id: skill.id,
 		name: {

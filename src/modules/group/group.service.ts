@@ -5,8 +5,9 @@ import { PrismaService } from '../../prisma.service';
 import { UserResponse } from '../user/response';
 import { UserService } from '../user/user.service';
 import { formatLookingForSkills, formatStyles, translateField } from '../user/utils/user.utils';
-import { CreateGroupDto } from './dto';
+import { ChangeMainData, CreateGroupDto } from './dto';
 import { GroupResponse } from './dto/response';
+import { includeGroupRelations } from './utils/group.utils';
 
 @Injectable()
 export class GroupService {
@@ -76,9 +77,7 @@ export class GroupService {
 	async getBandById(groupId: number, currentUserId?: number): Promise<GroupResponse> {
 		const group = await this.prisma.group.findUnique({
 			where: { id: groupId },
-			include: {
-				members: true,
-			},
+			include: includeGroupRelations,
 		});
 
 		if (!group) {
@@ -105,6 +104,27 @@ export class GroupService {
 		return { ...this.formatGroup(group), hasLiked, members };
 	}
 
+	async changeMainData(dto: ChangeMainData): Promise<GroupResponse> {
+		console.log('dto', dto);
+		const dataToUpdate = {
+			name: dto.name,
+			birthday: dto.birthday,
+			cityId: dto.city,
+			links: dto.links,
+		};
+
+		await this.prisma.group.update({
+			where: { id: dto.id },
+			data: dataToUpdate,
+		});
+
+		if (dto.styles) {
+			await this.updateGroupStyles(dto.id, dto.styles);
+		}
+
+		return this.getBandById(dto.id);
+	}
+
 	async hasLikedBand(likerId: number, likedId: number): Promise<boolean> {
 		if (!likerId) {
 			return false;
@@ -121,10 +141,10 @@ export class GroupService {
 	}
 
 	private async updateGroupStyles(groupId: number, styles: number[]): Promise<void> {
-		await this.prisma.userStyle.deleteMany({ where: { groupId } });
+		await this.prisma.groupStyle.deleteMany({ where: { groupId } });
 
-		const userStyles = styles.map((styleId) => ({ groupId, styleId }));
-		await this.prisma.userStyle.createMany({ data: userStyles });
+		const groupStyles = styles.map((styleId) => ({ groupId, styleId }));
+		await this.prisma.groupStyle.createMany({ data: groupStyles });
 	}
 
 	private searchLookingSkills(skillIds: number[]) {

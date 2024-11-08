@@ -65,7 +65,7 @@ model Group {
   cityId           Int?
   city             City?                   @relation(fields: [cityId], references: [id])
   links            String[]                @default([])
-  styles           UserStyle[]
+  styles           GroupStyle[]
   likesGiven       Likes[]                 @relation("LikesGivenByGroup")
   likesReceived    Likes[]                 @relation("LikesReceivedByGroup")
   members          GroupMember[]
@@ -133,6 +133,12 @@ model UserStyle {
   user    User?  @relation(fields: [userId], references: [id])
   styleId Int?
   style   Style? @relation(fields: [styleId], references: [id])
+}
+
+model GroupStyle {
+  id      Int    @id @default(autoincrement())
+  styleId Int?
+  style   Style? @relation(fields: [styleId], references: [id])
   groupId Int?
   group   Group? @relation(fields: [groupId], references: [id])
 }
@@ -153,9 +159,10 @@ model City {
 }
 
 model Style {
-  id    Int         @id @default(autoincrement())
-  name  String      @unique
-  users UserStyle[]
+  id     Int          @id @default(autoincrement())
+  name   String       @unique
+  users  UserStyle[]
+  groups GroupStyle[]
 }
 
 model Age {

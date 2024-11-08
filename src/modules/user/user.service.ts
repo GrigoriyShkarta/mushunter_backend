@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import * as admin from 'firebase-admin';
+import { I18nService } from 'nestjs-i18n';
+import { FirebaseRepository } from '../../firebase.service';
+import { PrismaService } from '../../prisma.service';
 import {
 	ChangeDescriptionDto,
 	ChangeInSearchDataDto,
@@ -6,9 +10,7 @@ import {
 	ChangeSkillsDataDto,
 	CreateUserDto,
 } from './dto';
-import { PrismaService } from '../../prisma.service';
 import { SettingsResponse, UserResponse } from './response';
-import { I18nService } from 'nestjs-i18n';
 import {
 	formatLookingForSkills,
 	formatSkills,
@@ -16,8 +18,6 @@ import {
 	includeUserRelations,
 	translateField,
 } from './utils/user.utils';
-import { FirebaseRepository } from '../../firebase.service';
-import * as admin from 'firebase-admin';
 
 @Injectable()
 export class UserService {
@@ -53,10 +53,7 @@ export class UserService {
 				const memberRoles = membership.group.members.find((m) => m.userId === user.id)?.role;
 
 				const member = memberRoles
-					? formatLookingForSkills(
-							this.i18n,
-							await this.searchLookingSkills(memberRoles.map((role) => role)),
-						)
+					? formatLookingForSkills(this.i18n, await this.searchLookingSkills(memberRoles.map((role) => role)))
 					: [];
 
 				return {
@@ -85,9 +82,7 @@ export class UserService {
 			}),
 		);
 
-		const stylesLookingForBand = await Promise.all(
-			await this.searchLookingStyles(user.stylesLookingForBand),
-		);
+		const stylesLookingForBand = await Promise.all(await this.searchLookingStyles(user.stylesLookingForBand));
 
 		const searchSkill = await this.searchLookingSkills(user.position ? [user.position] : []);
 		const position = formatLookingForSkills(this.i18n, searchSkill)[0];

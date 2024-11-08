@@ -3,6 +3,7 @@ import {
 	Controller,
 	Get,
 	Post,
+	Put,
 	Query,
 	Req,
 	UploadedFile,
@@ -11,22 +12,21 @@ import {
 	UsePipes,
 	ValidationPipe,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { SettingsResponse, UserResponse } from './response';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CompressionInterceptor } from '../../common/interceptors/compressionInterceptor';
 import { DecompressPipe } from '../../common/pipes/decompressPipe';
+import { OptionalJwtAuthGuard } from '../token/optionalGuard';
 import {
-	ChangeAvatar,
-	ChangeDescriptionDto, ChangeInSearchDataDto,
+	ChangeDescriptionDto,
+	ChangeInSearchDataDto,
 	ChangeMainDataDto,
 	ChangeSkillsDataDto,
-	GetUserDto,
 	ToggleLikeDto,
 } from './dto';
-import { OptionalJwtAuthGuard } from '../token/optionalGuard';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { SettingsResponse, UserResponse } from './response';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -68,7 +68,7 @@ export class UserController {
 	@UsePipes(DecompressPipe)
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 200, type: UserResponse })
-	@Post('changeMainData')
+	@Put('changeMainData')
 	async changeMainData(@Req() req, @Body() dto: ChangeMainDataDto): Promise<UserResponse> {
 		return this.userService.changeMainData(req.user.id, dto);
 	}
@@ -79,7 +79,7 @@ export class UserController {
 	@UsePipes(DecompressPipe)
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 200, type: UserResponse })
-	@Post('changeSkills')
+	@Put('changeSkills')
 	async changeSkills(@Req() req, @Body() dto: ChangeSkillsDataDto): Promise<UserResponse> {
 		return this.userService.changeSkills(req.user.id, dto);
 	}
@@ -90,7 +90,7 @@ export class UserController {
 	@UsePipes(DecompressPipe)
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 200, type: UserResponse })
-	@Post('changeDescription')
+	@Put('changeDescription')
 	async changeDescription(@Req() req, @Body() dto: ChangeDescriptionDto): Promise<UserResponse> {
 		return this.userService.changeDescription(req.user.id, dto);
 	}
@@ -112,7 +112,7 @@ export class UserController {
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 200, type: UserResponse })
 	@UseInterceptors(FileInterceptor('file'))
-	@Post('changeAvatar')
+	@Put('changeAvatar')
 	async changeAvatar(@Req() req, @UploadedFile() file: Express.Multer.File): Promise<UserResponse> {
 		return this.userService.changeAvatar(req.user.id, file);
 	}
@@ -123,7 +123,7 @@ export class UserController {
 	@UsePipes(DecompressPipe)
 	@UseInterceptors(CompressionInterceptor)
 	@ApiResponse({ status: 200, type: UserResponse })
-	@Post('changeInSearch')
+	@Put('changeInSearch')
 	async changeInSearch(@Req() req, @Body() dto: ChangeInSearchDataDto): Promise<UserResponse> {
 		return this.userService.changeInSearch(req.user.id, dto);
 	}

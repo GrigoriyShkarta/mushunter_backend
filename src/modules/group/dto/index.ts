@@ -31,3 +31,38 @@ export class CreateGroupDto {
 	@IsArray()
 	links: string[];
 }
+
+export class ChangeMainData {
+	@ApiProperty()
+	@IsNumber()
+	id: number;
+
+	@ApiProperty()
+	@IsString()
+	name: string;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsDate()
+	birthday: Date;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsString()
+	description: string;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsNumber()
+	city: number;
+
+	@ApiProperty()
+	@IsOptional()
+	@IsArray()
+	styles: number[];
+
+	@ApiProperty()
+	@IsOptional()
+	@IsArray()
+	links: string[];
+}

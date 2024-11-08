@@ -13,6 +13,5 @@ export class DecompressPipe implements PipeTransform {
 				throw new BadRequestException('Invalid compressed data');
 			}
 		}
-
 	}
 }
